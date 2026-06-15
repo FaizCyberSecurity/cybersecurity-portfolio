@@ -73,6 +73,19 @@ ReconForge can be used for:
 * Active Directory assessments
 * Internal network reconnaissance
 
+  ## Live Demo
+
+Open the live version of ReconForge:
+
+Live Demo: https://faizcybersecurity.github.io/cybersecurity-portfolio/projects/ReconForge/index.html
+
+## Usage
+
+1. Open ReconForge.
+2. Enter a port number or service name.
+3. Review the reconnaissance methodology, commands, and potential attack paths.
+
+
 ## Disclaimer
 
 ReconForge is intended for educational purposes, cybersecurity training, laboratory environments, and authorized security assessments only. Users are responsible for ensuring they have proper authorization before performing any security testing.
