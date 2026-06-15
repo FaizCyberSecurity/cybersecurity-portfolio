@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Port Playbook</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #13161e;
+      --border: #1e2330;
+      --accent: #00ff9d;
+      --accent-dim: rgba(0,255,157,0.08);
+      --red: #ff4d6d;
+      --yellow: #ffd166;
+      --text: #c9d1d9;
+      --muted: #4a5568;
+      --mono: 'Share Tech Mono', monospace;
+      --sans: 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-family: var(--mono);
+      font-size: 2rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 24px rgba(0,255,157,0.3);
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+      font-family: var(--mono);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 600px;
+      margin: 0 auto 2.5rem;
+    }
+
+    input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input::placeholder { color: var(--muted); }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,255,157,0.1); }
+
+    button {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 0.75rem 1.4rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    button:hover { opacity: 0.85; }
+
+    #output { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      animation: fadeIn 0.25s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--accent-dim);
+    }
+
+    .port-badge {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      background: var(--accent);
+      color: #000;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .service-name {
+      font-family: var(--mono);
+      font-size: 1.05rem;
+      color: var(--accent);
+      font-weight: 400;
+    }
+
+    .risk-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      letter-spacing: 0.08em;
+    }
+
+    .risk-high   { background: rgba(255,77,109,0.15); color: var(--red); border: 1px solid rgba(255,77,109,0.3); }
+    .risk-medium { background: rgba(255,209,102,0.12); color: var(--yellow); border: 1px solid rgba(255,209,102,0.3); }
+    .risk-low    { background: rgba(0,255,157,0.08); color: var(--accent); border: 1px solid rgba(0,255,157,0.2); }
+
+    .card-body { padding: 1rem 1.2rem; }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .section-label:first-child { margin-top: 0; }
+
+    ul { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+
+    ul li {
+      font-size: 0.88rem;
+      color: var(--text);
+      padding-left: 1.1rem;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    ul li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+
+    .cmd-block {
+      background: #0a0c10;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 0.65rem 0.9rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: #8be9fd;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .cmd-line { display: flex; align-items: flex-start; gap: 0.5rem; }
+    .prompt { color: var(--muted); user-select: none; }
+
+    .empty {
+      text-align: center;
+      font-family: var(--mono);
+      color: var(--muted);
+      padding: 3rem;
+      font-size: 0.9rem;
+    }
+
+    .error {
+      text-align: center;
+      font-family: var(--mono);
+      color: var(--red);
+      padding: 1.5rem;
+      font-size: 0.85rem;
+      background: rgba(255,77,109,0.05);
+      border: 1px solid rgba(255,77,109,0.2);
+      border-radius: 6px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>// PORT PLAYBOOK</h1>
+  <p>enter ports → get recon checklist</p>
+</header>
+
+<div class="input-row">
+  <input type="text" id="portInput" placeholder="e.g. 80, 22, 445, 3389" />
+  <button onclick="run()">SCAN</button>
+</div>
+
+<div id="output">
+  <div class="empty">// waiting for input</div>
+</div>
+
+<script>
+const PLAYBOOK = {
+  21: {
+    service: "FTP",
+    risk: "high",
+    recon: [
+      "Check for anonymous login",
+      "Banner grab for version info",
+      "List accessible directories",
+      "Check for writable directories"
+    ],
+    commands: [
+      "nmap -sV -p 21 --script ftp-anon,ftp-bounce,ftp-syst <ip>",
+      "ftp <ip>  # try anonymous:anonymous",
+      "hydra -L users.txt -P pass.txt ftp://<ip>"
+    ],
+    notes: [
+      "Anonymous FTP is a goldmine — check for config files, backups",
+      "FTP is cleartext — sniff creds if on the same network",
+      "Look for CVEs matching the banner version"
+    ]
+  },
+  22: {
+    service: "SSH",
+    risk: "medium",
+    recon: [
+      "Banner grab for OpenSSH version",
+      "Check supported auth methods",
+      "Enumerate valid usernames (timing attack)",
+      "Look for weak key algorithms"
+    ],
+    commands: [
+      "nmap -p 22 --script ssh2-enum-algos,ssh-auth-methods <ip>",
+      "ssh -v <ip>",
+      "hydra -L users.txt -P pass.txt ssh://<ip>"
+    ],
+    notes: [
+      "Old OpenSSH versions may allow user enumeration",
+      "Check if password auth is enabled — try common creds",
+      "Look for id_rsa keys in web dirs, backups, or git repos"
+    ]
+  },
+  23: {
+    service: "Telnet",
+    risk: "high",
+    recon: [
+      "Banner grab",
+      "Check for default credentials",
+      "Try anonymous/guest login",
+      "Note: all traffic is cleartext"
+    ],
+    commands: [
+      "nmap -p 23 --script telnet-ntlm-info,telnet-encryption <ip>",
+      "telnet <ip>",
+      "hydra -L users.txt -P pass.txt telnet://<ip>"
+    ],
+    notes: [
+      "Telnet is almost always a misconfiguration — free win",
+      "Credentials travel in plaintext — ideal for MITM",
+      "Often found on IoT/embedded devices with defaults"
+    ]
+  },
+  25: {
+    service: "SMTP",
+    risk: "medium",
+    recon: [
+      "Banner grab for MTA version",
+      "VRFY/EXPN user enumeration",
+      "Check for open relay",
+      "Enumerate valid email addresses"
+    ],
+    commands: [
+      "nmap -p 25 --script smtp-enum-users,smtp-open-relay <ip>",
+      "nc <ip> 25",
+      "smtp-user-enum -M VRFY -U users.txt -t <ip>"
+    ],
+    notes: [
+      "VRFY and EXPN can confirm valid usernames",
+      "Open relay = you can send mail as anyone",
+      "Check if internal hostnames leak in the banner"
+    ]
+  },
+  53: {
+    service: "DNS",
+    risk: "medium",
+    recon: [
+      "Attempt zone transfer (AXFR)",
+      "Enumerate subdomains",
+      "Check for DNS version disclosure",
+      "Look for internal hostnames"
+    ],
+    commands: [
+      "dig axfr @<ip> <domain>",
+      "nmap -p 53 --script dns-zone-transfer,dns-recursion <ip>",
+      "dnsrecon -d <domain> -t axfr"
+    ],
+    notes: [
+      "Zone transfer leaks every hostname — check it first",
+      "DNS version can reveal CVEs (BIND, etc.)",
+      "Internal DNS may expose private IP ranges and hostnames"
+    ]
+  },
+  80: {
+    service: "HTTP",
+    risk: "medium",
+    recon: [
+      "Check robots.txt and sitemap.xml",
+      "Run Gobuster/Feroxbuster for dirs",
+      "Identify tech stack (Wappalyzer)",
+      "Look for default pages and admin panels"
+    ],
+    commands: [
+      "gobuster dir -u http://<ip> -w /usr/share/wordlists/dirb/common.txt",
+      "whatweb http://<ip>",
+      "nikto -h http://<ip>"
+    ],
+    notes: [
+      "Check response headers for tech leaks (X-Powered-By, Server)",
+      "Look for /admin, /login, /phpmyadmin, /.git",
+      "Test for common vulns: SQLi, XSS, LFI, directory traversal"
+    ]
+  },
+  443: {
+    service: "HTTPS",
+    risk: "medium",
+    recon: [
+      "Check SSL/TLS cert for subdomains/hostnames",
+      "Test for weak ciphers (SSLScan)",
+      "Run Gobuster over HTTPS",
+      "Look for client cert auth"
+    ],
+    commands: [
+      "sslscan <ip>:443",
+      "gobuster dir -u https://<ip> -w /usr/share/wordlists/dirb/common.txt -k",
+      "nmap --script ssl-heartbleed,ssl-poodle -p 443 <ip>"
+    ],
+    notes: [
+      "Cert SANs often reveal internal hostnames and other subdomains",
+      "Check for Heartbleed, POODLE, BEAST on older servers",
+      "Don't forget to add discovered hostnames to /etc/hosts"
+    ]
+  },
+  445: {
+    service: "SMB",
+    risk: "high",
+    recon: [
+      "Enumerate shares (null session)",
+      "Check SMB version (v1 = EternalBlue risk)",
+      "RID cycling for usernames",
+      "Look for guest access on shares"
+    ],
+    commands: [
+      "smbclient -L //<ip> -N",
+      "nmap -p 445 --script smb-vuln-ms17-010,smb-enum-shares <ip>",
+      "enum4linux -a <ip>",
+      "crackmapexec smb <ip> --shares"
+    ],
+    notes: [
+      "SMBv1 = check EternalBlue (MS17-010) immediately",
+      "Null sessions can expose users, groups, shares",
+      "Check SYSVOL/NETLOGON for GPP passwords (MS14-025)"
+    ]
+  },
+  3306: {
+    service: "MySQL",
+    risk: "high",
+    recon: [
+      "Check for remote root login",
+      "Try default credentials (root:root, root:'')",
+      "Enumerate accessible databases",
+      "Check for UDF for privilege escalation"
+    ],
+    commands: [
+      "nmap -p 3306 --script mysql-info,mysql-empty-password <ip>",
+      "mysql -h <ip> -u root -p",
+      "hydra -L users.txt -P pass.txt mysql://<ip>"
+    ],
+    notes: [
+      "Empty root password is surprisingly common",
+      "If you get in: SELECT load_file() / INTO OUTFILE for RCE",
+      "MySQL exposed externally is almost always a misconfiguration"
+    ]
+  },
+  3389: {
+    service: "RDP",
+    risk: "high",
+    recon: [
+      "Check for BlueKeep (CVE-2019-0708)",
+      "Try default/common credentials",
+      "Check NLA requirement",
+      "Enumerate with nmap scripts"
+    ],
+    commands: [
+      "nmap -p 3389 --script rdp-vuln-ms12-020,rdp-enum-encryption <ip>",
+      "hydra -L users.txt -P pass.txt rdp://<ip>",
+      "xfreerdp /v:<ip> /u:Administrator"
+    ],
+    notes: [
+      "BlueKeep is unauthenticated RCE — check before anything else",
+      "NLA disabled = pre-auth attack surface is wider",
+      "Screenshot the login screen: often shows domain name"
+    ]
+  },
+  20: {
+    service: "FTP-Data",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 20 <ip>","nmap --script default -p 20 <ip>","nc <ip> 20"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  69: {
+    service: "TFTP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 69 <ip>","nmap --script default -p 69 <ip>","nc <ip> 69"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  88: {
+    service: "Kerberos",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 88 <ip>","nmap --script default -p 88 <ip>","nc <ip> 88"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  110: {
+    service: "POP3",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 110 <ip>","nmap --script default -p 110 <ip>","nc <ip> 110"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  111: {
+    service: "RPCbind",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 111 <ip>","nmap --script default -p 111 <ip>","nc <ip> 111"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  119: {
+    service: "NNTP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 119 <ip>","nmap --script default -p 119 <ip>","nc <ip> 119"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  123: {
+    service: "NTP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 123 <ip>","nmap --script default -p 123 <ip>","nc <ip> 123"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  135: {
+    service: "MSRPC",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 135 <ip>","nmap --script default -p 135 <ip>","nc <ip> 135"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  137: {
+    service: "NetBIOS-NS",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 137 <ip>","nmap --script default -p 137 <ip>","nc <ip> 137"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  138: {
+    service: "NetBIOS-DGM",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 138 <ip>","nmap --script default -p 138 <ip>","nc <ip> 138"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  143: {
+    service: "IMAP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 143 <ip>","nmap --script default -p 143 <ip>","nc <ip> 143"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  161: {
+    service: "SNMP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 161 <ip>","nmap --script default -p 161 <ip>","nc <ip> 161"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  179: {
+    service: "BGP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 179 <ip>","nmap --script default -p 179 <ip>","nc <ip> 179"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  389: {
+    service: "LDAP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 389 <ip>","nmap --script default -p 389 <ip>","nc <ip> 389"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  427: {
+    service: "SLP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 427 <ip>","nmap --script default -p 427 <ip>","nc <ip> 427"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  465: {
+    service: "SMTPS",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 465 <ip>","nmap --script default -p 465 <ip>","nc <ip> 465"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  514: {
+    service: "Syslog",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 514 <ip>","nmap --script default -p 514 <ip>","nc <ip> 514"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  515: {
+    service: "LPD",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 515 <ip>","nmap --script default -p 515 <ip>","nc <ip> 515"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  548: {
+    service: "AFP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 548 <ip>","nmap --script default -p 548 <ip>","nc <ip> 548"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  554: {
+    service: "RTSP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 554 <ip>","nmap --script default -p 554 <ip>","nc <ip> 554"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  587: {
+    service: "Submission",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 587 <ip>","nmap --script default -p 587 <ip>","nc <ip> 587"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  631: {
+    service: "IPP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 631 <ip>","nmap --script default -p 631 <ip>","nc <ip> 631"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  636: {
+    service: "LDAPS",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 636 <ip>","nmap --script default -p 636 <ip>","nc <ip> 636"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  873: {
+    service: "Rsync",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 873 <ip>","nmap --script default -p 873 <ip>","nc <ip> 873"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  902: {
+    service: "VMware",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 902 <ip>","nmap --script default -p 902 <ip>","nc <ip> 902"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  989: {
+    service: "FTPS-Data",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 989 <ip>","nmap --script default -p 989 <ip>","nc <ip> 989"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  990: {
+    service: "FTPS",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 990 <ip>","nmap --script default -p 990 <ip>","nc <ip> 990"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  993: {
+    service: "IMAPS",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 993 <ip>","nmap --script default -p 993 <ip>","nc <ip> 993"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  995: {
+    service: "POP3S",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 995 <ip>","nmap --script default -p 995 <ip>","nc <ip> 995"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  1025: {
+    service: "NFS/Windows RPC",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 1025 <ip>","nmap --script default -p 1025 <ip>","nc <ip> 1025"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  1080: {
+    service: "SOCKS",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 1080 <ip>","nmap --script default -p 1080 <ip>","nc <ip> 1080"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  1099: {
+    service: "Java RMI",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 1099 <ip>","nmap --script default -p 1099 <ip>","nc <ip> 1099"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  1433: {
+    service: "MSSQL",
+    risk: "high",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 1433 <ip>","nmap --script default -p 1433 <ip>","nc <ip> 1433"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  1434: {
+    service: "MSSQL Browser",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 1434 <ip>","nmap --script default -p 1434 <ip>","nc <ip> 1434"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  1521: {
+    service: "Oracle",
+    risk: "high",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 1521 <ip>","nmap --script default -p 1521 <ip>","nc <ip> 1521"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  1723: {
+    service: "PPTP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 1723 <ip>","nmap --script default -p 1723 <ip>","nc <ip> 1723"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  1883: {
+    service: "MQTT",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 1883 <ip>","nmap --script default -p 1883 <ip>","nc <ip> 1883"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  2049: {
+    service: "NFS",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 2049 <ip>","nmap --script default -p 2049 <ip>","nc <ip> 2049"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  2082: {
+    service: "cPanel",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 2082 <ip>","nmap --script default -p 2082 <ip>","nc <ip> 2082"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  2083: {
+    service: "cPanel SSL",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 2083 <ip>","nmap --script default -p 2083 <ip>","nc <ip> 2083"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  2181: {
+    service: "Zookeeper",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 2181 <ip>","nmap --script default -p 2181 <ip>","nc <ip> 2181"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  2375: {
+    service: "Docker",
+    risk: "high",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 2375 <ip>","nmap --script default -p 2375 <ip>","nc <ip> 2375"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  2379: {
+    service: "etcd",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 2379 <ip>","nmap --script default -p 2379 <ip>","nc <ip> 2379"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  2483: {
+    service: "Oracle",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 2483 <ip>","nmap --script default -p 2483 <ip>","nc <ip> 2483"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  3000: {
+    service: "Dev Web",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 3000 <ip>","nmap --script default -p 3000 <ip>","nc <ip> 3000"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  3128: {
+    service: "Squid",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 3128 <ip>","nmap --script default -p 3128 <ip>","nc <ip> 3128"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  3268: {
+    service: "Global Catalog",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 3268 <ip>","nmap --script default -p 3268 <ip>","nc <ip> 3268"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  3269: {
+    service: "Global Catalog SSL",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 3269 <ip>","nmap --script default -p 3269 <ip>","nc <ip> 3269"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  3690: {
+    service: "SVN",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 3690 <ip>","nmap --script default -p 3690 <ip>","nc <ip> 3690"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  4369: {
+    service: "EPMD",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 4369 <ip>","nmap --script default -p 4369 <ip>","nc <ip> 4369"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  4444: {
+    service: "Metasploit",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 4444 <ip>","nmap --script default -p 4444 <ip>","nc <ip> 4444"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  4848: {
+    service: "GlassFish",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 4848 <ip>","nmap --script default -p 4848 <ip>","nc <ip> 4848"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  5000: {
+    service: "Web Service",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 5000 <ip>","nmap --script default -p 5000 <ip>","nc <ip> 5000"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  5432: {
+    service: "PostgreSQL",
+    risk: "high",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 5432 <ip>","nmap --script default -p 5432 <ip>","nc <ip> 5432"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  5555: {
+    service: "ADB",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 5555 <ip>","nmap --script default -p 5555 <ip>","nc <ip> 5555"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  5601: {
+    service: "Kibana",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 5601 <ip>","nmap --script default -p 5601 <ip>","nc <ip> 5601"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  5672: {
+    service: "RabbitMQ",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 5672 <ip>","nmap --script default -p 5672 <ip>","nc <ip> 5672"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  5900: {
+    service: "VNC",
+    risk: "high",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 5900 <ip>","nmap --script default -p 5900 <ip>","nc <ip> 5900"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  5985: {
+    service: "WinRM",
+    risk: "high",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 5985 <ip>","nmap --script default -p 5985 <ip>","nc <ip> 5985"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  5986: {
+    service: "WinRM SSL",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 5986 <ip>","nmap --script default -p 5986 <ip>","nc <ip> 5986"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  6379: {
+    service: "Redis",
+    risk: "high",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 6379 <ip>","nmap --script default -p 6379 <ip>","nc <ip> 6379"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  6667: {
+    service: "IRC",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 6667 <ip>","nmap --script default -p 6667 <ip>","nc <ip> 6667"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  7001: {
+    service: "WebLogic",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 7001 <ip>","nmap --script default -p 7001 <ip>","nc <ip> 7001"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  7070: {
+    service: "Tomcat",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 7070 <ip>","nmap --script default -p 7070 <ip>","nc <ip> 7070"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  7199: {
+    service: "Cassandra",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 7199 <ip>","nmap --script default -p 7199 <ip>","nc <ip> 7199"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  7443: {
+    service: "HTTPS Alt",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 7443 <ip>","nmap --script default -p 7443 <ip>","nc <ip> 7443"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  7777: {
+    service: "Service",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 7777 <ip>","nmap --script default -p 7777 <ip>","nc <ip> 7777"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  8000: {
+    service: "HTTP Alt",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 8000 <ip>","nmap --script default -p 8000 <ip>","nc <ip> 8000"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  8008: {
+    service: "HTTP Proxy",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 8008 <ip>","nmap --script default -p 8008 <ip>","nc <ip> 8008"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  8080: {
+    service: "HTTP Alt",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 8080 <ip>","nmap --script default -p 8080 <ip>","nc <ip> 8080"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  8081: {
+    service: "HTTP Admin",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 8081 <ip>","nmap --script default -p 8081 <ip>","nc <ip> 8081"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  8443: {
+    service: "HTTPS Admin",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 8443 <ip>","nmap --script default -p 8443 <ip>","nc <ip> 8443"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  8888: {
+    service: "Web Panel",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 8888 <ip>","nmap --script default -p 8888 <ip>","nc <ip> 8888"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  9000: {
+    service: "PHP-FPM/Sonar",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 9000 <ip>","nmap --script default -p 9000 <ip>","nc <ip> 9000"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  9042: {
+    service: "Cassandra",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 9042 <ip>","nmap --script default -p 9042 <ip>","nc <ip> 9042"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  9090: {
+    service: "Web Console",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 9090 <ip>","nmap --script default -p 9090 <ip>","nc <ip> 9090"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  9200: {
+    service: "Elasticsearch",
+    risk: "high",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 9200 <ip>","nmap --script default -p 9200 <ip>","nc <ip> 9200"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  9300: {
+    service: "Elastic Transport",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 9300 <ip>","nmap --script default -p 9300 <ip>","nc <ip> 9300"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  9418: {
+    service: "Git",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 9418 <ip>","nmap --script default -p 9418 <ip>","nc <ip> 9418"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  9999: {
+    service: "Admin Service",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 9999 <ip>","nmap --script default -p 9999 <ip>","nc <ip> 9999"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  10000: {
+    service: "Webmin",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 10000 <ip>","nmap --script default -p 10000 <ip>","nc <ip> 10000"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  11211: {
+    service: "Memcached",
+    risk: "high",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 11211 <ip>","nmap --script default -p 11211 <ip>","nc <ip> 11211"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  15672: {
+    service: "RabbitMQ Mgmt",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 15672 <ip>","nmap --script default -p 15672 <ip>","nc <ip> 15672"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  27017: {
+    service: "MongoDB",
+    risk: "high",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 27017 <ip>","nmap --script default -p 27017 <ip>","nc <ip> 27017"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  28017: {
+    service: "MongoDB HTTP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 28017 <ip>","nmap --script default -p 28017 <ip>","nc <ip> 28017"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  50000: {
+    service: "SAP",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 50000 <ip>","nmap --script default -p 50000 <ip>","nc <ip> 50000"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  50070: {
+    service: "Hadoop",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 50070 <ip>","nmap --script default -p 50070 <ip>","nc <ip> 50070"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  61616: {
+    service: "ActiveMQ",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 61616 <ip>","nmap --script default -p 61616 <ip>","nc <ip> 61616"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  49152: {
+    service: "Win RPC",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 49152 <ip>","nmap --script default -p 49152 <ip>","nc <ip> 49152"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  },
+  49154: {
+    service: "Win RPC",
+    risk: "medium",
+    recon: ["Identify version","Check authentication","Enumerate service data","Look for misconfigurations"],
+    commands: ["nmap -sV -p 49154 <ip>","nmap --script default -p 49154 <ip>","nc <ip> 49154"],
+    notes: ["Review banner/version information","Search for known CVEs","Check for anonymous or weak access"]
+  }};
+
+function run() {
+  const raw = document.getElementById("portInput").value;
+  const out = document.getElementById("output");
+
+  const ports = raw.split(",").map(p => parseInt(p.trim())).filter(p => !isNaN(p));
+
+  if (!ports.length) {
+    out.innerHTML = `<div class="error">// no valid ports detected — enter numbers separated by commas</div>`;
+    return;
+  }
+
+  const unknown = ports.filter(p => !PLAYBOOK[p]);
+  const known   = ports.filter(p =>  PLAYBOOK[p]);
+
+  let html = "";
+
+  known.forEach((port, i) => {
+    const data = PLAYBOOK[port];
+    const riskClass = `risk-${data.risk}`;
+    const delay = i * 0.06;
+
+    html += `
+    <div class="card" style="animation-delay:${delay}s">
+      <div class="card-header">
+        <span class="port-badge">${port}/tcp</span>
+        <span class="service-name">${data.service}</span>
+        <span class="risk-badge ${riskClass}">${data.risk.toUpperCase()}</span>
+      </div>
+      <div class="card-body">
+        <div class="section-label">// recon checklist</div>
+        <ul>${data.recon.map(r => `<li>${r}</li>`).join("")}</ul>
+
+        <div class="section-label">// commands</div>
+        <div class="cmd-block">
+          ${data.commands.map(c => `<div class="cmd-line"><span class="prompt">$</span><span>${c}</span></div>`).join("")}
+        </div>
+
+        <div class="section-label">// notes</div>
+        <ul>${data.notes.map(n => `<li>${n}</li>`).join("")}</ul>
+      </div>
+    </div>`;
+  });
+
+  if (unknown.length) {
+    html += `<div class="error">// no playbook entry for port(s): ${unknown.join(", ")} — coming soon</div>`;
+  }
+
+  out.innerHTML = html || `<div class="empty">// no matching ports found</div>`;
+}
+
+document.getElementById("portInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") run();
+});
+</script>
+</body>
+</html>
