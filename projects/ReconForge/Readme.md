@@ -82,7 +82,7 @@ Live Demo: https://faizcybersecurity.github.io/cybersecurity-portfolio/projects/
 ## Usage
 
 1. Open ReconForge.
-2. Enter a port number or service name.
+2. Enter a port number or if it's more than one then saparate the port numbers with comma's(',') [For ex: 80,445,3389] .
 3. Review the reconnaissance methodology, commands, and potential attack paths.
 
 
