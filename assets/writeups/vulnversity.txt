@@ -1,0 +1,57 @@
+🛡️ THM Writeup – Vulnversity
+📌 Overview
+Platform: TryHackMe
+Room: Vulnversity
+Difficulty: Easy
+Focus: Enumeration, Web Exploitation, Privilege Escalation
+🔍 1. Enumeration
+Nmap Scan
+nmap -F -sV -v <IP> -p 3333
+Open Ports
+21 (FTP)
+22 (SSH)
+139 (SMB)
+445 (SMB)
+3128 (Proxy)
+3333 (HTTP)
+Key Finding
+Web server running on port 3333
+🌐 2. Directory Brute Forcing & Exploitation
+Tool Used
+Gobuster
+Discovered Directories
+/css
+/fonts
+/images
+/internal
+/js
+Target
+/internal/ → File upload functionality identified
+⚡ Bypassing Upload Restrictions
+.php extension was blocked
+Tested alternatives:
+.php3
+.php4
+.php5
+.phtml ✅
+Exploitation
+Uploaded reverse shell using .phtml extension
+Successfully gained shell access
+🔐 3. Privilege Escalation
+Finding SUID Binaries
+find / -user root -perm -4000 -exec ls -ldb {} \; 2>/dev/null
+Vulnerable Binary
+/bin/systemctl
+Exploitation Method
+Referenced GTFOBins
+Used systemctl to escalate privileges
+🏁 Final Result
+Root shell obtained
+Retrieved root.txt
+✅ Lab successfully completed
+📚 Skills Demonstrated
+Network Enumeration
+Directory Bruteforcing
+File Upload Bypass
+Reverse Shell Execution
+Privilege Escalation (SUID + GTFOBins)

