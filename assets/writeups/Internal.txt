@@ -1,0 +1,81 @@
+🧠 TryHackMe – Internal (Hard | Linux)
+📌 Overview
+Machine Name: Internal
+Difficulty: Hard
+Platform: TryHackMe
+Type: Linux
+🔍 Enumeration
+🔹 Nmap Scan
+nmap -sV <IP>
+🔹 Findings
+22/tcp → SSH
+80/tcp → HTTP
+🌐 Web Enumeration
+🔹 Directory Bruteforce
+gobuster dir -u http://<IP> -w /usr/share/wordlists/dirb/common.txt
+🔹 Discovered Directories
+/blog/
+/phpmyadmin/
+/wordpress/
+🔹 WordPress Analysis
+Found user: admin
+Login page:
+http://<IP>/blog/wp-login.php
+🔐 Brute Force Attack
+🔹 WPScan
+wpscan --url http://<IP>/blog -U admin -P /usr/share/wordlists/rockyou.txt
+🔹 Credentials Found
+Username: admin
+Password: my2boys
+💣 Initial Access
+Logged into WordPress dashboard
+Identified Theme Editor vulnerability
+Injected reverse shell
+🐚 Reverse Shell
+Gained shell access on the machine
+🔎 Post Exploitation
+🔹 Sensitive File Found
+wp-save.txt
+🔹 Credentials Discovered
+aubreanna : bub13guM!@#123
+🔐 SSH Access
+ssh aubreanna@<IP>
+Successfully logged in as aubreanna
+🔹 Flags & Files
+Found: user.txt ✅
+Found: jenkins.txt
+⚙️ Internal Service Enumeration
+Jenkins running on:
+172.17.0.2:8080
+🔁 Pivoting (SSH Tunneling)
+ssh -L 8080:172.17.0.2:8080 aubreanna@<IP>
+Accessed Jenkins locally
+🔓 Jenkins Exploitation
+🔹 Brute Force using Hydra
+hydra -l admin -P rockyou.txt <IP> http-post-form
+🔹 Credentials Found
+Username: admin
+Password: spongebob
+💥 Privilege Escalation
+Logged into Jenkins
+Used Script Console (Groovy)
+Executed reverse shell
+👑 Root Access
+🔹 Final Files
+note.txt → contained root credentials
+root.txt → ✅ obtained
+🏁 Conclusion
+
+Successfully:
+
+Enumerated services
+Exploited WordPress
+Gained initial access
+Pivoted via SSH tunneling
+Exploited Jenkins
+Achieved root access
+🧠 Key Takeaways
+Always enumerate hidden directories
+Weak credentials = easy entry
+Internal services can be accessed via tunneling
+Jenkins is a common privilege escalation vector
