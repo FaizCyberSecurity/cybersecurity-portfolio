@@ -310,16 +310,19 @@
 
     <a href="#home" class="top-btn" id="topBtn">↑</a>
 
-    function copyEmail() {
-    const email = "faizmairaj4@gmail.com";
-    navigator.clipboard.writeText(email).then(() => {
-        const btnText = document.getElementById("btn-text");
-        btnText.innerText = "Email Copied! ✓";
-        setTimeout(() => {
-            btnText.innerText = "Copy Email";
-        }, 2000);
-    });
-}
-
+    <script>
+        function copyEmail() {
+            const email = "faizmairaj4@gmail.com";
+            navigator.clipboard.writeText(email).then(() => {
+                const btnText = document.getElementById("btn-text");
+                btnText.innerText = "Email Copied! ✓";
+                setTimeout(() => {
+                    btnText.innerText = "Copy Email";
+                }, 2000);
+            }).catch(err => {
+                console.error("Failed to copy text: ", err);
+            });
+        }
+    </script>
 </body>
 </html>
