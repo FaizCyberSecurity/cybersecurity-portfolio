@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internal Walkthrough | Mohd Faiz</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .writeup-container { max-width: 900px; margin: 100px auto 40px; padding: 0 20px; color: #e0e0e0; font-family: monospace; }
+        .back-link { color: #00ff88; text-decoration: none; display: inline-block; margin-bottom: 20px; }
+        .writeup-title { color: #00ff88; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .tag { background: #1f293d; color: #00ff88; padding: 3px 8px; border-radius: 4px; font-size: 0.85rem; margin-right: 5px; }
+        pre { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; overflow-x: auto; color: #58a6ff; }
+        h2 { color: #00ff88; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="writeup-container">
+        <a href="../index.html#labs" class="back-link">&lt;-- Back to Labs</a>
+        <h1 class="writeup-title">TryHackMe: Internal Walkthrough</h1>
+        <p><strong>Platform:</strong> TryHackMe | <strong>Category:</strong> Active Directory / Network Pentesting</p>
+        <div>
+            <span class="tag">Active Directory</span>
+            <span class="tag">Windows</span>
+            <span class="tag">PrivEsc</span>
+        </div>
+
+        <h2>// 01. Reconnaissance</h2>
+        <p>Initial network enumeration using Nmap to discover open ports and services:</p>
+        <pre><code>nmap -sC -sV -oA nmap/internal &lt;TARGET_IP&gt;</code></pre>
+        <p>Discovered services include SMB (139/445), HTTP (80), and NetBIOS.</p>
+
+        <h2>// 02. Enumeration</h2>
+        <p>Directory brute-forcing using Gobuster to reveal hidden endpoints:</p>
+        <pre><code>gobuster dir -u http://&lt;TARGET_IP&gt;/ -w /usr/share/wordlists/dirb/common.txt</code></pre>
+        <p>Found WordPress blog installation hosted under <code>/blog</code>.</p>
+
+        <h2>// 03. Exploitation & Privilege Escalation</h2>
+        <ul>
+            <li>Brute-forced WordPress credentials using WPScan.</li>
+            <li>Uploaded a PHP reverse shell via theme editor to gain initial foot hold (`www-data`).</li>
+            <li>Discovered internal Jenkins instance running on port 8080 via local enumeration.</li>
+            <li>Pivoted through SSH tunnel to access Jenkins, recovered administrative credentials, and escalated privileges to Root.</li>
+        </ul>
+    </div>
+</body>
+</html>
