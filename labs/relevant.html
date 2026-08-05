@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relevant Walkthrough | Mohd Faiz</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .writeup-container { max-width: 900px; margin: 100px auto 40px; padding: 0 20px; color: #e0e0e0; font-family: monospace; }
+        .back-link { color: #00ff88; text-decoration: none; display: inline-block; margin-bottom: 20px; }
+        .writeup-title { color: #00ff88; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .tag { background: #1f293d; color: #00ff88; padding: 3px 8px; border-radius: 4px; font-size: 0.85rem; margin-right: 5px; }
+        pre { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; overflow-x: auto; color: #58a6ff; }
+        h2 { color: #00ff88; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="writeup-container">
+        <a href="../index.html#labs" class="back-link">&lt;-- Back to Labs</a>
+        <h1 class="writeup-title">TryHackMe: Relevant Walkthrough</h1>
+        <p><strong>Platform:</strong> TryHackMe | <strong>Category:</strong> Windows Web / SMB Exploitation</p>
+        <div>
+            <span class="tag">SMB</span>
+            <span class="tag">IIS</span>
+            <span class="tag">PrivEsc</span>
+        </div>
+
+        <h2>// 01. Nmap Scan</h2>
+        <p>Ran comprehensive scan targeting all TCP ports:</p>
+        <pre><code>nmap -sC -sV -p- -oA nmap/relevant &lt;TARGET_IP&gt;</code></pre>
+        <p>Open ports: 80 (HTTP), 135 (RPC), 139/445 (SMB), 3389 (RDP), 49663 (IIS HTTP).</p>
+
+        <h2>// 02. SMB Enumeration</h2>
+        <p>Enumerate accessible shares anonymously:</p>
+        <pre><code>smbclient -L //&lt;TARGET_IP&gt;/ -N</code></pre>
+        <p>Identified writeable share <code>nt4wrksv</code>. Verified that file uploads to this share are accessible over IIS on port 49663.</p>
+
+        <h2>// 03. Initial Access & Root</h2>
+        <ul>
+            <li>Generated ASPX web shell using <code>msfvenom</code> and uploaded it via SMB client.</li>
+            <li>Triggered shell via web browser to establish reverse connection as <code>iis apppool\defaultapppool</code>.</li>
+            <li>Checked privileges via <code>whoami /priv</code> and identified <code>SeImpersonatePrivilege</code> enabled.</li>
+            <li>Executed PrintSpoofer / Potato exploit to gain <code>NT AUTHORITY\SYSTEM</code> shell.</li>
+        </ul>
+    </div>
+</body>
+</html>
