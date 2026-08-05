@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnversity Walkthrough | Mohd Faiz</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .writeup-container { max-width: 900px; margin: 100px auto 40px; padding: 0 20px; color: #e0e0e0; font-family: monospace; }
+        .back-link { color: #00ff88; text-decoration: none; display: inline-block; margin-bottom: 20px; }
+        .writeup-title { color: #00ff88; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .tag { background: #1f293d; color: #00ff88; padding: 3px 8px; border-radius: 4px; font-size: 0.85rem; margin-right: 5px; }
+        pre { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; overflow-x: auto; color: #58a6ff; }
+        h2 { color: #00ff88; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="writeup-container">
+        <a href="../index.html#labs" class="back-link">&lt;-- Back to Labs</a>
+        <h1 class="writeup-title">TryHackMe: Vulnversity Walkthrough</h1>
+        <p><strong>Platform:</strong> TryHackMe | <strong>Category:</strong> Web Security / File Upload Bypass</p>
+        <div>
+            <span class="tag">Enumeration</span>
+            <span class="tag">File Upload</span>
+            <span class="tag">systemctl</span>
+        </div>
+
+        <h2>// 01. Reconnaissance</h2>
+        <p>Identified running Apache server on port 31337 via Nmap scan.</p>
+        <pre><code>gobuster dir -u http://&lt;TARGET_IP&gt;:31337/ -w /usr/share/wordlists/dirb/common.txt</code></pre>
+        <p>Discovered internal upload form at <code>/internal/</code>.</p>
+
+        <h2>// 02. File Upload Bypass</h2>
+        <ul>
+            <li>Tested restricted file extensions (<code>.php</code>, <code>.php3</code>, <code>.php4</code>, <code>.phtml</code>) using Burp Suite Intruder payload generator.</li>
+            <li>Bypassed extension blacklist using <code>.phtml</code> extension.</li>
+            <li>Uploaded PHP reverse shell script and triggered callback via netcat listener:
+            <pre><code>nc -lvnp 1234</code></pre></li>
+        </ul>
+
+        <h2>// 03. Privilege Escalation</h2>
+        <p>Identified misconfigured SUID permission on system utility <code>systemctl</code>:</p>
+        <pre><code>find / -user root -perm -4000 -exec ls -ldb {} \; 2&gt;/dev/null</code></pre>
+        <p>Created a custom systemd service file to execute a root reverse shell payload or write flag output to elevated directory.</p>
+    </div>
+</body>
+</html>
