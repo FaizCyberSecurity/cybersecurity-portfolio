@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReportForge</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&family=Inter:wght@100..900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow" aria-hidden="true"></div>
+
+<!-- ============== SIDEBAR ============== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-top">
+    <a href="#dashboard" class="logo">&lt;RF<span class="blink">_</span>/&gt;</a>
+    <button class="sidebar-collapse" id="sidebarCollapse" aria-label="Collapse sidebar">‹</button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="#dashboard" class="nav-item" data-page="dashboard">
+      <span class="nav-icon">▣</span><span class="nav-label">Dashboard</span>
+    </a>
+    <a href="#reports" class="nav-item" data-page="reports">
+      <span class="nav-icon">▤</span><span class="nav-label">Reports</span>
+    </a>
+    <a href="#findings" class="nav-item" data-page="findings">
+      <span class="nav-icon">▲</span><span class="nav-label">Findings Library</span>
+    </a>
+    <a href="#clients" class="nav-item" data-page="clients">
+      <span class="nav-icon">◈</span><span class="nav-label">Clients</span>
+    </a>
+    <a href="#settings" class="nav-item" data-page="settings">
+      <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <p class="sidebar-tag">// local-first</p>
+  </div>
+</aside>
+
+<!-- ============== TOPBAR ============== -->
+<header class="topbar">
+  <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+
+  <h1 class="topbar-title" id="topbarTitle">Dashboard</h1>
+
+  <div class="topbar-actions">
+    <button class="btn btn-secondary btn-sm" id="exportDataBtn">Export JSON</button>
+    <button class="btn btn-primary btn-sm" id="topbarNewReport">+ New Report</button>
+  </div>
+</header>
+
+<!-- ============== MAIN CONTENT ============== -->
+<main class="main-content" id="mainContent">
+  <!-- Rendered by script.js based on route -->
+</main>
+
+<!-- ============== MODAL ROOT ============== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card" id="modalCard"></div>
+</div>
+
+<!-- ============== REPORT PREVIEW (print target) ============== -->
+<div class="report-preview-overlay" id="reportPreviewOverlay">
+  <div class="report-preview-toolbar">
+    <button class="btn btn-secondary btn-sm" id="closePreviewBtn">✕ Close</button>
+    <button class="btn btn-primary btn-sm" id="printReportBtn">🖨 Print / Save as PDF</button>
+  </div>
+  <div class="report-preview-doc" id="reportPreviewDoc"></div>
+</div>
+
+<!-- ============== TOAST ============== -->
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
