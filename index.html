@@ -9,6 +9,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&family=Inter:wght@100..900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
+    <link rel="shortcut icon" href="favicon.ico">
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -102,37 +108,70 @@
         </div>
     </section>
 
-    <!-- ================= FEATURED PROJECT ================= -->
+    <!-- ================= FEATURED PROJECTS ================= -->
     <section id="projects" class="projects">
-        <h2 class="section-title"><span class="title-tag">// featured</span>Featured Project</h2>
+        <h2 class="section-title"><span class="title-tag">// featured</span>Featured Projects</h2>
 
         <div class="container">
-            <div class="glass-card project-card">
-                <span class="project-tag">Cybersecurity Tool</span>
+            <div class="projects-grid">
 
-                <h3 class="project-title">ReconForge</h3>
+                <div class="glass-card project-card">
+                    <span class="project-tag">Cybersecurity Tool</span>
 
-                <p class="project-description">
-                    ReconForge is a cybersecurity-focused Enumeration
-                    Playbook that assists penetration testers during the
-                    reconnaissance and enumeration phases of security
-                    assessments by providing structured methodologies,
-                    useful commands, and attack paths.
-                </p>
+                    <h3 class="project-title">ReconForge</h3>
 
-                <div class="project-tech">
-                    <span class="tech">HTML</span>
-                    <span class="tech">CSS</span>
-                    <span class="tech">JavaScript</span>
-                    <span class="tech">Cybersecurity</span>
+                    <p class="project-description">
+                        ReconForge is a cybersecurity-focused Enumeration
+                        Playbook that assists penetration testers during the
+                        reconnaissance and enumeration phases of security
+                        assessments by providing structured methodologies,
+                        useful commands, and attack paths.
+                    </p>
+
+                    <div class="project-tech">
+                        <span class="tech">HTML</span>
+                        <span class="tech">CSS</span>
+                        <span class="tech">JavaScript</span>
+                        <span class="tech">Cybersecurity</span>
+                    </div>
+
+                    <div class="project-buttons">
+                        <a href="https://faizcybersecurity.github.io/cybersecurity-portfolio/projects/ReconForge/index.html"
+                           class="btn btn-primary" target="_blank">Live Demo</a>
+                        <a href="https://github.com/FaizCyberSecurity/cybersecurity-portfolio/tree/main/projects/ReconForge"
+                           class="btn btn-secondary" target="_blank">GitHub</a>
+                    </div>
                 </div>
 
-                <div class="project-buttons">
-                    <a href="https://faizcybersecurity.github.io/cybersecurity-portfolio/projects/ReconForge/index.html"
-                       class="btn btn-primary" target="_blank">Live Demo</a>
-                    <a href="https://github.com/FaizCyberSecurity"
-                       class="btn btn-secondary" target="_blank">GitHub</a>
+                <div class="glass-card project-card">
+                    <span class="project-tag">Full-Stack Web App</span>
+
+                    <h3 class="project-title">ReportForge</h3>
+
+                    <p class="project-description">
+                        ReportForge is a client-side penetration testing
+                        report builder — manage a reusable findings library,
+                        clients, and draft/final reports, then generate a
+                        polished, print-ready consulting-style report with
+                        severity badges, evidence images, and page breaks.
+                        All data persists locally, no backend required.
+                    </p>
+
+                    <div class="project-tech">
+                        <span class="tech">HTML</span>
+                        <span class="tech">CSS</span>
+                        <span class="tech">JavaScript</span>
+                        <span class="tech">LocalStorage</span>
+                    </div>
+
+                    <div class="project-buttons">
+                        <a href="https://faizcybersecurity.github.io/cybersecurity-portfolio/projects/ReportForge/"
+                           class="btn btn-primary" target="_blank">Live Demo</a>
+                        <a href="https://github.com/FaizCyberSecurity/cybersecurity-portfolio/tree/main/projects/ReportForge"
+                           class="btn btn-secondary" target="_blank">GitHub</a>
+                    </div>
                 </div>
+
             </div>
         </div>
     </section>
@@ -149,7 +188,7 @@
                     <p class="cert-issuer">Issued by <strong>CRAW Security</strong></p>
                     <div class="cert-footer">
                         <span class="badge badge-success">Completed</span>
-                        <a href="assets/certificates/networking.pdf" target="_blank" class="cert-link">View Certificate</a>
+                        <a href="assets/certificates/networking.pdf" target="_blank" class="cert-link">📄View Certificate</a>
                     </div>
                 </div>
 
@@ -158,7 +197,7 @@
                     <p class="cert-issuer">Issued by <strong>CRAW Security</strong></p>
                     <div class="cert-footer">
                         <span class="badge badge-success">Completed</span>
-                        <a href="assets/certificates/linux.pdf" target="_blank" class="cert-link">View Certificate</a>
+                        <a href="assets/certificates/linux.pdf" target="_blank" class="cert-link">📄View Certificate</a>
                     </div>
                 </div>
 
@@ -167,25 +206,25 @@
                     <p class="cert-issuer">Issued by <strong>CRAW Security</strong></p>
                     <div class="cert-footer">
                         <span class="badge badge-success">Completed</span>
-                        <a href="assets/certificates/ethical-hacking.pdf" target="_blank" class="cert-link">View Certificate</a>
+                        <a href="assets/certificates/ethical-hacking.pdf" target="_blank" class="cert-link">📄View Certificate</a>
                     </div>
                 </div>
 
                 <div class="glass-card cert-card">
-                    <h3 class="cert-title">Penetration Testing</h3>
+                    <h3 class="cert-title">Advanced Pen Testing</h3>
                     <p class="cert-issuer">Issued by <strong>CRAW Security</strong></p>
                     <div class="cert-footer">
                         <span class="badge badge-success">Completed</span>
-                        <a href="assets/certificates/advanced-penetration-testing.pdf" target="_blank" class="cert-link">View Certificate</a>
+                        <a href="assets/certificates/advanced-penetration-testing.pdf" target="_blank" class="cert-link">📄View Certificate</a>
                     </div>
                 </div>
 
                 <div class="glass-card cert-card">
-                    <h3 class="cert-title">Top 20 Critical Web Application Vulnerability</h3>
+                    <h3 class="cert-title">Web Penetration Testing</h3>
                     <p class="cert-issuer">Issued by <strong>CRAW Security</strong></p>
                     <div class="cert-footer">
                         <span class="badge badge-success">Completed</span>
-                        <a href="assets/certificates/web-penetration-testing.pdf" target="_blank" class="cert-link">View Certificate</a>
+                        <a href="assets/certificates/web-penetration-testing.pdf" target="_blank" class="cert-link">📄View Certificate</a>
                     </div>
                 </div>
 
@@ -218,7 +257,7 @@
                         <span class="lab-tag">Windows</span>
                         <span class="lab-tag">PrivEsc</span>
                     </div>
-                    <a href="https://faizcybersecurity.github.io/cybersecurity-portfolio/labs/internal.html" class="lab-btn" target="_blank">Read Write-up →</a>
+                    <a href="assets/writeups/internal.txt" class="lab-btn" target="_blank">Read Write-up →</a>
                 </div>
 
                 <div class="glass-card lab-card">
@@ -230,7 +269,7 @@
                         <span class="lab-tag">Web</span>
                         <span class="lab-tag">PrivEsc</span>
                     </div>
-                    <a href="https://faizcybersecurity.github.io/cybersecurity-portfolio/labs/relevant.html" class="lab-btn" target="_blank">Read Write-up →</a>
+                    <a href="assets/writeups/relevant.txt" class="lab-btn" target="_blank">Read Write-up →</a>
                 </div>
 
                 <div class="glass-card lab-card">
@@ -242,7 +281,7 @@
                         <span class="lab-tag">Linux</span>
                         <span class="lab-tag">PrivEsc</span>
                     </div>
-                    <a href="https://faizcybersecurity.github.io/cybersecurity-portfolio/labs/mr-robot.html" class="lab-btn" target="_blank">Read Write-up →</a>
+                    <a href="assets/writeups/MrRobot.txt" class="lab-btn" target="_blank">Read Write-up →</a>
                 </div>
 
                 <div class="glass-card lab-card">
@@ -254,7 +293,7 @@
                         <span class="lab-tag">Web</span>
                         <span class="lab-tag">Upload</span>
                     </div>
-                    <a href="https://faizcybersecurity.github.io/cybersecurity-portfolio/labs/vulnversity.html" class="lab-btn" target="_blank">Read Write-up →</a>
+                    <a href="assets/writeups/vulnversity.txt" class="lab-btn" target="_blank">Read Write-up →</a>
                 </div>
 
             </div>
@@ -310,19 +349,5 @@
 
     <a href="#home" class="top-btn" id="topBtn">↑</a>
 
-    <script>
-        function copyEmail() {
-            const email = "faizmairaj4@gmail.com";
-            navigator.clipboard.writeText(email).then(() => {
-                const btnText = document.getElementById("btn-text");
-                btnText.innerText = "Email Copied! ✓";
-                setTimeout(() => {
-                    btnText.innerText = "Copy Email";
-                }, 2000);
-            }).catch(err => {
-                console.error("Failed to copy text: ", err);
-            });
-        }
-    </script>
 </body>
 </html>
