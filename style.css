@@ -559,10 +559,17 @@ nav ul li a.active::after {
     text-align: center;
 }
 
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+    align-items: start;
+}
+
 .project-card {
-    max-width: 950px;
+    max-width: 100%;
     margin: auto;
-    padding: 50px;
+    padding: 50px 40px;
 }
 
 .project-tag {
